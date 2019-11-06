@@ -21,16 +21,10 @@ class Molecule:
                     self.y.append(float(line[6]))
                     self.z.append(float(line[7]))
                 elif(line[0] == 'TER'):
-                    self.id.append(line[0])
-                    self.atom.append('')
-                    self.residue.append('')
-                    self.res_num.append('')
-                    self.x.append('')
-                    self.y.append('')
-                    self.z.append('')
+                    break
                     
     def writePDB(self, filename):
-        with open(filename, "w+") as outf:
+        with open(filename, "a") as outf:
             for i in range(len(self.id)):
                 if(self.id[i] == 'ATOM' or self.id[i] == 'HETATM'):
                     outf.write("{:6s}{:5d} {:^5s}{:3s} {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}{:6.2f}{:6.2f}          {:>2s}{:2s}\n".format(
@@ -45,16 +39,19 @@ class Molecule:
                     self.y[i],
                     self.z[i],
                     1.00, 0.00, '', ''))    # occupancy, temperature factor, element symbol, charge on the atom
-                elif(self.id[i] == 'TER'):
-                    outf.write("TER\n")
-            outf.write("END\n")
+            outf.write("TER\nEND\n")
     
 molecule1 = Molecule()
 #molecule2 = Molecule()
    
-molecule1.readPDB("butane.pdb")
+molecule1.readPDB("butane_opt.pdb")
 #molecule2.readPDB("ethane.pdb")
 
 molecule1.writePDB("butane1.pdb")
 #molecule2.writePDB("ethane1.pdb")
 
+
+for i in range(len(molecule1.atom)): 
+    molecule1.x[i]+=10
+
+molecule1.writePDB("butane2.pdb")
