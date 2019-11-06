@@ -1,51 +1,51 @@
 class Molecule:
     def __init__(self):
-        self.chain = list()
-    class Chain:
-            def __init__(self):
-                self.id = list()    # "ATOM " or "HETATM"
-                self.atom = list()  # atom name
-                self.residue = list()   # residue name
-                self.res_num = list()   # residue sequence number
-                self.x = list() # orthogonal coordinates for X (in Angstroms)
-                self.y = list() # orthogonal coordinates for Y (in Angstroms)
-                self.z = list() # orthogonal coordinates for Z (in Angstroms)
+        self.id = list()    # "ATOM " or "HETATM" (or "TER")
+        self.atom = list()  # atom name
+        self.residue = list()   # residue name
+        self.res_num = list()   # residue sequence number
+        self.x = list() # orthogonal coordinates for X (in Angstroms)
+        self.y = list() # orthogonal coordinates for Y (in Angstroms)
+        self.z = list() # orthogonal coordinates for Z (in Angstroms)
 
     def readPDB(self, filename):
         with open(filename, "r") as inf:
-            i = 0
-            self.chain.append(self.Chain())
             for line in inf:
                 line = line.split()
                 if(line[0] == 'ATOM' or line[0] == 'HETATM'):
-                    self.chain[i].id.append(line[0])
-                    self.chain[i].atom.append(line[2])
-                    self.chain[i].residue.append(line[3])
-                    self.chain[i].res_num.append(int(line[4]))
-                    self.chain[i].x.append(float(line[5]))
-                    self.chain[i].y.append(float(line[6]))
-                    self.chain[i].z.append(float(line[7]))
+                    self.id.append(line[0])
+                    self.atom.append(line[2])
+                    self.residue.append(line[3])
+                    self.res_num.append(int(line[4]))
+                    self.x.append(float(line[5]))
+                    self.y.append(float(line[6]))
+                    self.z.append(float(line[7]))
                 elif(line[0] == 'TER'):
-                    i += 1
-                    self.chain.append(self.Chain())
+                    self.id.append(line[0])
+                    self.atom.append('')
+                    self.residue.append('')
+                    self.res_num.append('')
+                    self.x.append('')
+                    self.y.append('')
+                    self.z.append('')
                     
     def writePDB(self, filename):
         with open(filename, "w+") as outf:
-            for i in range(len(self.chain)):
-                for j in range(len(self.chain[i].id)):
+            for i in range(len(self.id)):
+                if(self.id[i] == 'ATOM' or self.id[i] == 'HETATM'):
                     outf.write("{:6s}{:5d} {:^5s}{:3s} {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}{:6.2f}{:6.2f}          {:>2s}{:2s}\n".format(
-                    self.chain[i].id[j],
-                    j+1,    # atom serial number
-                    self.chain[i].atom[j],
-                    self.chain[i].residue[j],
+                    self.id[i],
+                    i+1,    # atom serial number
+                    self.atom[i],
+                    self.residue[i],
                     '', # alternate location indicator
-                    self.chain[i].res_num[j],
+                    self.res_num[i],
                     '', # chain identifier
-                    self.chain[i].x[j],
-                    self.chain[i].y[j],
-                    self.chain[i].z[j],
+                    self.x[i],
+                    self.y[i],
+                    self.z[i],
                     1.00, 0.00, '', ''))    # occupancy, temperature factor, element symbol, charge on the atom
-                if(j < len(self.chain[i].id)):
+                elif(self.id[i] == 'TER'):
                     outf.write("TER\n")
             outf.write("END\n")
     
