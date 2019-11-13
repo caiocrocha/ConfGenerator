@@ -3,55 +3,65 @@ import numpy as np
 class Molecule:
     def __init__(self):
         self.topology = self.Topology()
-        self.id = list()    # "ATOM " or "HETATM" (or "TER")
+        self.id = list()    # "ATOM " or "HETATM"
         self.atom = list()  # atom name
+        self.alt_loc = list()   # alternate location indicator
         self.residue = list()   # residue name
+        self.chain = list() # chain identifier
         self.res_num = list()   # residue sequence number
+        self.ins_code = list()   # insertion code for residues
         self.x = list() # orthogonal coordinates for X (in Angstroms)
         self.y = list() # orthogonal coordinates for Y (in Angstroms)
         self.z = list() # orthogonal coordinates for Z (in Angstroms)
+        self.occup = list() # occupancy
+        self.temp = list()  # temperature factor
+        self.element = list()   # element symbol
+        self.charge = list()
 
     def readPDB(self, filename):
         with open(filename, "r") as inf:
             for line in inf:
-                line = line.split()
-                if(line[0] == 'ATOM' or line[0] == 'HETATM'):
-                    self.id.append(line[0])
-                    self.atom.append(line[2])
-                    self.residue.append(line[3])
-                    self.res_num.append(int(line[4]))
-                    self.x.append(float(line[5]))
-                    self.y.append(float(line[6]))
-                    self.z.append(float(line[7]))
-                elif(line[0] == 'TER'):
-                    self.id.append(line[0])
-                    self.atom.append('')
-                    self.residue.append('')
-                    self.res_num.append('')
-                    self.x.append('')
-                    self.y.append('')
-                    self.z.append('')
+                if(('ATOM' in line) or ('HETATM' in line)):
+                    self.id.append(line[0:6].strip())
+                    self.atom.append(line[12:16].strip())
+                    self.alt_loc.append(line[16:17].strip())
+                    self.residue.append(line[17:20].strip())
+                    self.chain.append(line[21:22].strip())
+                    self.res_num.append(int(line[22:26]))
+                    self.ins_code.append(line[26:27].strip())
+                    self.x.append(float(line[30:38]))
+                    self.y.append(float(line[38:46]))
+                    self.z.append(float(line[46:54]))
+                    self.occup.append(float(line[54:60]))
+                    self.temp.append(float(line[60:66].strip()))
+                    self.element.append(line[72:75].strip())
+                    self.charge.append(line[75:77].strip())
+                elif(('TER' in line) or ('END' in line)):
+                    break
                     
     def writePDB(self, filename):
         with open(filename, "w+") as outf:
+            #outf.write("CRYST1    0.000    0.000    0.000  90.00  90.00  90.00 P 1           1\n")
             for i in range(len(self.id)):
                 if(self.id[i] == 'ATOM' or self.id[i] == 'HETATM'):
-                    outf.write("{:6s}{:5d} {:^5s}{:3s} {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}{:6.2f}{:6.2f}          {:>2s}{:2s}\n".format(
+                    outf.write("{:6s}{:5d} {:^4s}{:1s}{:3s} {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}{:6.2f}{:6.2f}      {:>2s}{:2s}\n".format(
                     self.id[i],
                     i+1,    # atom serial number
                     self.atom[i],
+                    self.alt_loc[i],
                     self.residue[i],
-                    '', # alternate location indicator
+                    self.chain[i],
                     self.res_num[i],
-                    '', # chain identifier
+                    self.ins_code[i],
                     self.x[i],
                     self.y[i],
                     self.z[i],
-                    1.00, 0.00, '', ''))    # occupancy, temperature factor, element symbol, charge on the atom
-                elif(self.id[i] == 'TER'):
-                    outf.write("TER\n")
+                    self.occup[i],
+                    self.temp[i],
+                    self.element[i],
+                    self.charge[i]))
             outf.write("END\n")
-
+    
     class Topology:
         def __init__(self):
             self.num_atoms = 0  # number of atoms
@@ -71,21 +81,12 @@ class Molecule:
     
         def readPSF(self, filename):
             with open(filename, "r") as inf:
-                flag = ''
-                for line in inf:
-                    if(line != '\n'):
-                        line = line.split()
-                        if('!' in line[1]):
-                            flag = line[1]
-                        if('!NATOM' in line[1]):
-                            self.num_atoms = int(line[0])
-                        elif('!NBOND' in line[1]):
-                            self.num_bonds = int(line[0])
-                        elif('!NTHETA' in line[1]):
-                            self.num_angles = int(line[0])
-                        elif('!NPHI' in line[1]):
-                            self.num_dihedrals = int(line[0])
-                        elif('!NATOM' in flag):
+                line = inf.readline()
+                while line:
+                    if("!NATOM" in line):
+                        self.num_atoms = int(line.split()[0])
+                        for i in range(self.num_atoms):
+                            line = inf.readline().split()
                             self.segid.append(line[1])
                             self.resid.append(int(line[2]))
                             self.resname.append(line[3])
@@ -93,61 +94,151 @@ class Molecule:
                             self.type.append(line[5])
                             self.charge.append(float(line[6]))
                             self.mass.append(float(line[7]))
-                        elif('!NBOND' in flag):
-                            self.bonds.extend(list(zip(*[iter(line)] * 2)))
-                        elif('!NTHETA' in flag):
-                            self.angles.extend(list(zip(*[iter(line)] * 3)))
-                        elif('!NPHI' in flag):
-                            self.dihedrals.extend(list(zip(*[iter(line)] * 4)))
+                    elif("!NBOND" in line):
+                        self.num_bonds = int(line.split()[0])
+                        num_lines = int(self.num_bonds/4)
+                        if(self.num_bonds%2 != 0):
+                            num_lines+=1
+                        for i in range(num_lines):
+                            self.bonds.extend(inf.readline().split())
+                    elif("!NTHETA" in line):
+                        self.num_angles = int(line.split()[0])
+                        num_lines = int(self.num_angles/3)
+                        if(self.num_angles%2 != 0):
+                            num_lines+=1
+                        for i in range(num_lines):
+                            self.angles.extend(inf.readline().split())
+                    elif("!NPHI" in line):
+                        self.num_dihedrals = int(line.split()[0])
+                        num_lines = int(self.num_dihedrals/2)
+                        if(self.num_dihedrals%2 != 0):
+                            num_lines+=1
+                        for i in range(num_lines):
+                            self.dihedrals.extend(inf.readline().split())
+                    line = inf.readline()
+    
+        def writePSF(self, filename):
+            with open(filename, "w+") as outf:
+                outf.write("PSF CHEQ EXT XPLOR\n\n{:10d} !NTITLE\n\n\n{:10d} !NATOM\n".format(1, self.num_atoms))
+                for i in range(self.num_atoms):
+                    outf.write("{:10d} {:5s}{:5d} {:>10s}     {:^5s}     {:5s}{:12.6f}  {:12.4f}\n".format(
+                    i+1,
+                    self.segid[i],
+                    self.resid[i],
+                    self.resname[i],
+                    self.name[i],
+                    self.type[i],
+                    self.charge[i],
+                    self.mass[i]))
+                outf.write("\n{:10d} !NBOND: bonds\n".format(self.num_bonds))
+                for i in range(self.num_bonds*2):
+                    outf.write("{:>10s}".format(self.bonds[i]))
+                    if(((i+1)%8 == 0 and i != 0) or (i == self.num_bonds*2-1)):
+                        outf.write("\n")
+                outf.write("\n")
+                outf.write("{:10d} !NTHETA: angles\n".format(self.num_angles))
+                for i in range(self.num_angles*3):
+                    outf.write("{:>10s}".format(self.angles[i]))
+                    if(((i+1)%9 == 0 and i != 0) or (i == self.num_angles*3-1)):
+                        outf.write("\n")
+                outf.write("\n")
+                outf.write("{:10d} !NPHI: dihedrals\n".format(self.num_dihedrals))
+                for i in range(self.num_dihedrals*4):
+                    outf.write("{:>10s}".format(self.dihedrals[i]))
+                    if(((i+1)%8 == 0 and i != 0) or (i == self.num_dihedrals*4-1)):
+                        outf.write("\n")
+                outf.write("\n")
+                
+    def bond_list(self, a):
+        bond_list = list()
+        for i in range(0, len(self.topology.bonds), 2):
+            if(a == int(self.topology.bonds[i]) or a == int(self.topology.bonds[i+1])):
+                bond_list.append(int(self.topology.bonds[i]))
+                bond_list.append(int(self.topology.bonds[i+1]))
+        return bond_list
+    
+    def angle_list(self, a):
+        angle_list = list()
+        for i in range(0, len(self.topology.angles), 3):
+            if(a == int(self.topology.angles[i+1])):
+                angle_list.append(int(self.topology.angles[i]))
+                angle_list.append(int(self.topology.angles[i+1]))
+                angle_list.append(int(self.topology.angles[i+2]))
+        return angle_list
+    
+    def dihedral_list(self, a):
+        dihedral_list = list()
+        for i in range(0, len(self.topology.dihedrals), 4):
+            if(a == int(self.topology.dihedrals[i+1]) or a == int(self.topology.dihedrals[i+2])):
+                dihedral_list.append(int(self.topology.dihedrals[i]))
+                dihedral_list.append(int(self.topology.dihedrals[i+1]))
+                dihedral_list.append(int(self.topology.dihedrals[i+2]))
+                dihedral_list.append(int(self.topology.dihedrals[i+3]))
+        return dihedral_list
 
-    def rotate(self, a, b, axis, angle):   # bond a-b, rotate chain from b // angle in radians
-        r = list()
-        for i in range(self.topology.num_bonds):
-            if(a not in self.topology.bonds[i]):
-                if(b == int(self.topology.bonds[i][0])):
-                    r.append(int(self.topology.bonds[i][1]))
-                elif(b == int(self.topology.bonds[i][1])):
-                    r.append(int(self.topology.bonds[i][0]))
-        for j in range(len(r)):
-            for i in range(self.topology.num_bonds):
-                if(b not in self.topology.bonds[i]):
-                    if(r[j] == int(self.topology.bonds[i][0])):
-                        r.append(int(self.topology.bonds[i][1]))
-                    elif(r[j] == int(self.topology.bonds[i][1])):
-                        r.append(int(self.topology.bonds[i][0]))
+    def rotate(self, a, b, theta):   # bond a-b, rotate chain from b // theta in radians
+        r = list()  # list of atoms to be rotated
+        for i in range(0, len(self.topology.bonds), 2):
+            if(b == int(self.topology.bonds[i]) and a != int(self.topology.bonds[i+1])):
+                r.append(int(self.topology.bonds[i+1]))
+                start = i+2
+                break
+            elif(b == int(self.topology.bonds[i+1]) and a != int(self.topology.bonds[i])): 
+                r.append(int(self.topology.bonds[i]))
+                start = i+2
+                break
+        for i in range(start, len(self.topology.bonds), 2):
+            if(b == int(self.topology.bonds[i]) and a != int(self.topology.bonds[i+1])):
+                r.append(int(self.topology.bonds[i+1]))
+            elif(b == int(self.topology.bonds[i+1]) and a != int(self.topology.bonds[i])): 
+                r.append(int(self.topology.bonds[i]))
+        self.rotate_list(r, 0, start, b)
+        r = list(set(r))
+        '''
+        For the construction of the rotation matrix around the axis defined by the bond that
+        connects atoms a and b (vector ab, a to b), there needs to be determined ab's unit vector, 
+        which is mathematicaly defined by its original components divided by the square root
+        of its magnitude.
+        '''
+        m = (((self.x[b-1] - self.x[a-1])**2) + ((self.y[b-1] - self.y[a-1])**2) + ((self.z[b-1] - self.z[a-1])**2))**0.5
+        # m is the magnitude of the unit vector u
+        ux = (self.x[b-1] - self.x[a-1])/m # x component of u
+        uy = (self.y[b-1] - self.y[a-1])/m # y component of u
+        uz = (self.z[b-1] - self.z[a-1])/m # z component of u
+        cos0 = np.cos(theta) # cosine of the angle of rotation
+        sin0 = np.sin(theta) # sine of the angle of rotation
         for i in range(len(r)):
-            print(r[i])
-            '''
-        x1 = self.x[b]
-        y1 = self.y[b]
-        z1 = self.z[b]
-        if(axis == 'x' or axis == 'X'):
-            self.y[b] = y1*np.cos(angle) - z1*np.sin(angle)
-            self.z[b] = y1*np.sin(angle) + z1*np.cos(angle)
-        elif(axis == 'y' or axis == 'Y'):
-            self.x[b] = x1*np.cos(angle) - z1*np.sin(angle)
-            self.z[b] = x1*np.sin(angle) + z1*np.cos(angle)
-        elif(axis == 'z' or axis == 'Z'):
-            self.y[b] = x1*np.cos(angle) - y1*np.sin(angle)
-            self.z[b] = x1*np.sin(angle) + y1*np.cos(angle)
-        for i in range(len(r)):
-            x1 = self.x[r[i]]
-            y1 = self.y[r[i]]
-            z1 = self.z[r[i]]
-            if(axis == 'x' or axis == 'X'):
-                self.y[r[i]] = y1*np.cos(angle) - z1*np.sin(angle)
-                self.z[r[i]] = y1*np.sin(angle) + z1*np.cos(angle)
-            elif(axis == 'y' or axis == 'Y'):
-                self.x[r[i]] = x1*np.cos(angle) - z1*np.sin(angle)
-                self.z[r[i]] = x1*np.sin(angle) + z1*np.cos(angle)
-            elif(axis == 'z' or axis == 'Z'):
-                self.y[r[i]] = x1*np.cos(angle) - y1*np.sin(angle)
-                self.z[r[i]] = x1*np.sin(angle) + y1*np.cos(angle)
-                '''
+            x1 = self.x[r[i]-1]
+            y1 = self.y[r[i]-1]
+            z1 = self.z[r[i]-1]
+            self.x[r[i]-1] = round(((cos0 + (1-cos0)*(ux**2))*x1 + ((1-cos0)*ux*uy + sin0*uz)*y1 + ((1-cos0)*ux*uz + sin0*uy)*z1), 3)
+            self.y[r[i]-1] = round((((1-cos0)*ux*uy + sin0*uz)*x1 + (cos0 + (1-cos0)*(uy**2))*y1 + ((1-cos0)*uy*uz + sin0*ux)*z1), 3)
+            self.z[r[i]-1] = round((((1-cos0)*ux*uz + sin0*uy)*x1 + ((1-cos0)*uy*uz + sin0*ux)*y1 + (cos0 + (1-cos0)*(uz**2))*z1), 3)
+
+    def rotate_list(self, r, c, start, b):
+        if(c < len(r) and len(r) < self.topology.num_atoms):
+            for i in range(start, len(self.topology.bonds), 2):
+                if((r[c] == int(self.topology.bonds[i])) and (b != int(self.topology.bonds[i+1]))):
+                    r.append(int(self.topology.bonds[i+1]))
+                    start = i+2
+                    break
+                elif((r[c] == int(self.topology.bonds[i+1])) and (b != int(self.topology.bonds[i]))): 
+                    r.append(int(self.topology.bonds[i]))
+                    start = i+2
+                    break
+            for i in range(start, len(self.topology.bonds), 2):
+                if((r[c] == int(self.topology.bonds[i])) and (b != int(self.topology.bonds[i+1]))):
+                    r.append(int(self.topology.bonds[i+1]))
+                elif((r[c] == int(self.topology.bonds[i+1])) and (b != int(self.topology.bonds[i]))): 
+                    r.append(int(self.topology.bonds[i]))
+            self.rotate_list(r, c+1, start, b)
 
 molecule = Molecule()
 
-molecule.readPDB("butane.pdb")
+molecule.readPDB("butane_opt.pdb")
 molecule.topology.readPSF("butane.psf")
-
-molecule.rotate(2, 3, 'x', np.pi/2)
+bond_list_C3 = molecule.bond_list(3)
+angle_list_C3 = molecule.angle_list(3)
+dihed_list_C3 = molecule.dihedral_list(3)
+molecule.rotate(2, 3, np.pi/2)
+molecule.writePDB("butane_opt_rotated.pdb")
