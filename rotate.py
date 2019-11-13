@@ -1,4 +1,8 @@
 import numpy as np
+import argparse
+
+
+
 
 class Molecule:
     def __init__(self):
@@ -233,12 +237,45 @@ class Molecule:
                     r.append(int(self.topology.bonds[i]))
             self.rotate_list(r, c+1, start, b)
 
+
+def get_cmd_line():
+    parser = argparse.ArgumentParser(description = 'PDB and PSF reader, chain rotator.')
+
+    parser.add_argument('--pdb', action = 'store',     dest = 'pdb', required = True, help = 'PDB file.')
+    parser.add_argument('--psf', action = 'store',     dest = 'psf', required = True, help = 'PSF file.')
+    parser.add_argument('--new_pdb', action = 'store',     dest = 'new_pdb', required = True, help = 'New PDB file.')
+    parser.add_argument('--new_psf', action = 'store',     dest = 'new_psf', required = True, help = 'New PSF file.')
+
+    arguments = parser.parse_args()
+
+
+    # Assign from cmd line.
+    return (arguments.pdb,
+            arguments.psf,
+            arguments.new_pdb,
+            arguments.new_psf)
+           
+           
 molecule = Molecule()
 
-molecule.readPDB("butane_opt.pdb")
-molecule.topology.readPSF("butane.psf")
+pdb, psf, out_pdb, out_psf = get_cmd_line()
+
+molecule.readPDB(pdb)
+molecule.topology.readPSF(psf)
 bond_list_C3 = molecule.bond_list(3)
 angle_list_C3 = molecule.angle_list(3)
 dihed_list_C3 = molecule.dihedral_list(3)
 molecule.rotate(2, 3, np.pi/2)
 molecule.writePDB("butane_opt_rotated.pdb")
+
+for i in range(0, len(bond_list_C3), 2):
+	print(bond_list_C3[i:i+2])
+print("\n\n")
+for i in range(0, len(angle_list_C3), 3):
+	print(angle_list_C3[i:i+3])
+print("\n\n")
+for i in range(0, len(dihed_list_C3), 4):
+	print(dihed_list_C3[i:i+4])
+print("\n\n")
+for i in range(0, len(molecule.topology.bonds), 2):
+	print(molecule.topology.bonds[i:i+2])
