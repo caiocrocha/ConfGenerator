@@ -109,7 +109,7 @@ class Molecule:
                     elif("!NTHETA" in line):
                         self.num_angles = int(line.split()[0])
                         num_lines = int(self.num_angles/3)
-                        if(self.num_angles%2 != 0):
+                        if(self.num_angles%3 != 0):
                             num_lines+=1
                         for i in range(num_lines):
                             self.angle_list.extend(inf.readline().split())
@@ -168,33 +168,43 @@ class Molecule:
                     line = inf.readline()
                 
     def get_bond_list(self, a):
+        print("blist")
         blist = list()
-        for i in range(0, self.topology.num_bonds*2, 2):
-            if(str(a) in self.topology.bond_list[i:i+2]):
-                blist.append(int(self.topology.bond_list[i]))
-                blist.append(int(self.topology.bond_list[i+1]))
-        return blist
+        try:
+            for i in range(0, self.topology.num_bonds*2, 2):
+                if(str(a) in self.topology.bond_list[i:i+2]):
+                    blist.append(int(self.topology.bond_list[i]))
+                    blist.append(int(self.topology.bond_list[i+1]))
+                    print(i, blist)
+            return blist
+        except: print(blist)
     
     def get_angle_list(self, a):
+        print("alist")
         alist = list()
-        for i in range(0, self.topology.num_angles*3, 3):
-            if(a == int(self.topology.angle_list[i+1])):
-                alist.append(int(self.topology.angle_list[i]))
-                alist.append(int(self.topology.angle_list[i+1]))
-                alist.append(int(self.topology.angle_list[i+2]))
-        return alist
-    
+        try:
+            for i in range(0, self.topology.num_angles*3, 3):
+                if(a == int(self.topology.angle_list[i+1])):
+                    alist.append(int(self.topology.angle_list[i]))
+                    alist.append(int(self.topology.angle_list[i+1]))
+                    alist.append(int(self.topology.angle_list[i+2]))
+                    print(i, alist)
+            return alist
+        except: print(alist)
     def get_dihedral_list(self, a):
+        print("dlist")
         dlist = list()
-        for i in range(0, self.topology.num_dihedrals*4, 4):
-            if(str(a) in self.topology.dihedral_list[i+1:i+3]):
-                dlist.append(int(self.topology.dihedral_list[i]))
-                dlist.append(int(self.topology.dihedral_list[i+1]))
-                dlist.append(int(self.topology.dihedral_list[i+2]))
-                dlist.append(int(self.topology.dihedral_list[i+3]))
-        return dlist
-    
-    def rotate_list(self, r, c, start, b):
+        try:
+            for i in range(0, self.topology.num_dihedrals*4, 4):
+                if(str(a) in self.topology.dihedral_list[i+1:i+3]):
+                    dlist.append(int(self.topology.dihedral_list[i]))
+                    dlist.append(int(self.topology.dihedral_list[i+1]))
+                    dlist.append(int(self.topology.dihedral_list[i+2]))
+                    dlist.append(int(self.topology.dihedral_list[i+3]))
+                    print(i, dlist)
+            return dlist
+        except: print(dlist)
+    def rotate_list(self, r, c, start, b): # recursive function for self.det_rotate_list()
         if(c < len(r) < self.topology.num_atoms):
             for i in range(start, self.topology.num_bonds*2, 2):
                 p = int(self.topology.bond_list[i])
@@ -218,8 +228,7 @@ class Molecule:
                     r.append(p)
             self.rotate_list(r, c+1, start, b)
     
-    def rotate(self, a, b, theta):   # bond a-b, rotate chain from b // theta in radians
-        r = list()  # list of atoms to be rotated
+    def det_rotate_list(self, a, b, r):   # bond a-b, rotate chain from b // theta in radians
         for i in range(0, self.topology.num_bonds*2, 2):
             p = int(self.topology.bond_list[i])
             q = int(self.topology.bond_list[i+1])
@@ -240,6 +249,10 @@ class Molecule:
                 r.append(p)
         self.rotate_list(r, 0, start, b)
         r = list(set(r)) # removes duplicates
+        
+    def rotate(self, a, b, theta):
+        r = list()  # list of atoms to be rotated
+        self.det_rotate_list(a, b, r)
         '''
         For the construction of the rotation matrix around the axis defined by the bond that
         connects atoms a and b (vector ab, a to b), there needs to be determined ab's unit vector, 
@@ -287,7 +300,7 @@ class Molecule:
                     Vb += K*((b-b0)**2) # acumulates the potential energy of the bond
         return Vb
 
-'''
+
 def get_cmd_line():
     parser = argparse.ArgumentParser(description = 'PDB and PSF reader, chain rotator.')
 
@@ -304,22 +317,30 @@ def get_cmd_line():
             arguments.psf,
             arguments.new_pdb,
             arguments.new_psf)
-'''           
+     
         
 molecule = Molecule()
 
-# pdb, psf, out_pdb, out_psf = get_cmd_line()
+#pdb, psf, out_pdb, out_psf = get_cmd_line()
+pdb='butane_test.pdb'
+psf='butane_test.psf'
+out_pdb='test.pdb'
+out_psf='test.psf'
 
-molecule.read_pdb("butane_opt.pdb")
-molecule.topology.read_psf("butane.psf")
+molecule.read_pdb(pdb)
+molecule.topology.read_psf(psf)
 molecule.topology.read_frcmod("butane.frcmod")
 bond_list_C3 = molecule.get_bond_list(3)
 angle_list_C3 = molecule.get_angle_list(3)
 dihed_list_C3 = molecule.get_dihedral_list(3)
-molecule.rotate(2, 3, np.pi/2)
 Vb = molecule.calculate_pot_energy()
 print("Vb =", Vb)
-#molecule.write_pdb("butane_opt_rotated.pdb")
+
+molecule.rotate(2, 3, np.pi/2)
+molecule.write_pdb(out_pdb)
+
+
+
 
 '''
 for i in range(0, len(bond_list_C3), 2):
