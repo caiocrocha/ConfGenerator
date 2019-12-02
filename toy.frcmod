@@ -1,0 +1,26 @@
+Remark line goes here
+MASS
+XX  16.000        0.465               same as ow 
+YY  1.008         0.135               same as hw 
+ZZ  1.008         0.135               same as hw
+WW  1.008         0.135               same as hw
+
+BOND
+XX-YY   553.00   0.957       same as ow-hw, penalty score=  0.0
+YY-ZZ   553.00   1.514       same as hw-hw, penalty score=  0.0
+ZZ-WW   553.00   1.514       same as hw-hw, penalty score=  0.0
+
+ANGLE
+XX-YY-ZZ  100.000     100.000   same as hw-hw-ow, penalty score=  0.0
+YY-ZZ-WW  100.000     100.000   same as hw-ow-hw, penalty score=  0.0
+
+DIHE
+
+IMPROPER
+
+NONBON
+  OW          1.7683  0.1520             same as ow 
+  HW          0.0000  0.0000             same as hw 
+
+
+
