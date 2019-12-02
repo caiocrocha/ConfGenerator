@@ -1,0 +1,38 @@
+PSF CHEQ EXT XPLOR
+
+         1 !NTITLE
+
+
+         4 !NATOM
+         1 SYS      1        BUT      C1       c3      -0.065400       12.0100           
+         2 SYS      1        BUT      C2       c3      -0.056400       12.0100           
+         3 SYS      1        BUT      C3       c3      -0.056400       12.0100           
+         4 SYS      1        BUT      C4       c3      -0.065400       12.0100           
+
+         3 !NBOND: bonds
+         1         2         2         3         3         4         
+
+         2 !NTHETA: angles
+         1         2         3         2         3         4
+
+         1 !NPHI: dihedrals
+         1         2         3         4
+
+         0 !NIMPHI: impropers
+
+
+         0 !NDON: donors
+
+
+         0 !NACC: acceptors
+
+
+         0 !NNB
+
+         0         0         0         0         0         0         0         0
+         0         0         0         0         0         0
+
+         1         0 !NGRP NST2
+         0         2         0
+
+         0 !NCRTERM: cross-terms
