@@ -172,9 +172,9 @@ class Molecule:
                 self.chain = np.empty(natoms, dtype='U1')
                 self.res_num = np.zeros(natoms, dtype='uint8')
                 self.ins_code = np.empty(natoms, dtype='U1')
-                self.x = np.zeros(natoms, dtype='float16')
-                self.y = np.zeros(natoms, dtype='float16')
-                self.z = np.zeros(natoms, dtype='float16')
+                self.x = np.zeros(natoms, dtype='float32')
+                self.y = np.zeros(natoms, dtype='float32')
+                self.z = np.zeros(natoms, dtype='float32')
                 self.occup = np.zeros(natoms, dtype='float16')
                 self.temp = np.zeros(natoms, dtype='float16')
                 self.element = np.empty(natoms, dtype='U3')
@@ -260,11 +260,11 @@ class Molecule:
         a = a-1
         row = int(a*(a-1)/2)
         for i in range(a):
-            if(self.topology.bond_matrix[row + i]):
+            if(self.topology.bond_matrix[row+i]):
                 blist.append(i+1)
-        for i in range(a, self.num_atoms-1):
-            if(self.topology.bond_matrix[int(i*(i+1)/2 + a)]):
-                blist.append(i+2)
+        for i in range(a+1, self.num_atoms):
+            if(self.topology.bond_matrix[int(i*(i-1)/2 + a)]):
+                blist.append(i+1)
         return blist
     
     def get_angle_list(self, a):
