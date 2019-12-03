@@ -26,25 +26,29 @@ def recursive_rotate_list(molecule, r, c, start, b):
         recursive_rotate_list(molecule, r, c+1, start, b)
 
 def rotate_list(molecule, r, a, b):
-    for i in range(0, molecule.topology.num_bonds*2, 2):
-        p = molecule.topology.bond_list[i]
-        q = molecule.topology.bond_list[i+1]
-        if(p == b and q != a):
-            r.append(q)
-            start = i+2
-            break
-        elif(q == b and p != a): 
-            r.append(p)
-            start = i+2
-            break
-    for i in range(start, molecule.topology.num_bonds*2, 2):
-        p = molecule.topology.bond_list[i]
-        q = molecule.topology.bond_list[i+1]
-        if(p == b and q != a):
-            r.append(q)
-        elif(q == b and p != a): 
-            r.append(p)
-    recursive_rotate_list(molecule, r, 0, start, b)
+    b = b-1
+    for i in range(b, molecule.num_atoms-1):
+        if(molecule.topology.bond_matrix[int(i*(i+1)/2 + b)]):
+            r.append(i+2)
+#    for i in range(0, molecule.topology.num_bonds*2, 2):
+#        p = molecule.topology.bond_list[i]
+#        q = molecule.topology.bond_list[i+1]
+#        if(p == b and q != a):
+#            r.append(q)
+#            start = i+2
+#            break
+#        elif(q == b and p != a): 
+#            r.append(p)
+#            start = i+2
+#            break
+#    for i in range(start, molecule.topology.num_bonds*2, 2):
+#        p = molecule.topology.bond_list[i]
+#        q = molecule.topology.bond_list[i+1]
+#        if(p == b and q != a):
+#            r.append(q)
+#        elif(q == b and p != a): 
+#            r.append(p)
+#    recursive_rotate_list(molecule, r, 0, start, b)
        
 def rotate(molecule, a, b, theta):   # bond a-b, rotate chain from b // theta in radians
     r = list()  # list of atoms to be rotated
@@ -79,6 +83,47 @@ def rotate(molecule, a, b, theta):   # bond a-b, rotate chain from b // theta in
         molecule.y[j] = round(((t*ux*uy + sin0*uz)*x1 + (cos0 + t*(uy**2))*y1 + (t*uy*uz - sin0*ux)*z1), 3) + Ay
         molecule.z[j] = round(((t*ux*uz - sin0*uy)*x1 + (t*uy*uz + sin0*ux)*y1 + (cos0 + t*(uz**2))*z1), 3) + Az
         # rotation matrix applied to point
+
+def recursive_fast_rotate(molecule, atom, 
+                          Ax, Ay, Az, ux, uy, uz, cos0, sin0, t):
+    atom = atom-1
+    for i in range(atom, molecule.num_atoms-1):
+        if(molecule.topology.bond_matrix[int(i*(i+1)/2 + atom)]):
+            print("ATOM", i+2)
+            x1 = molecule.x[i+1]
+            y1 = molecule.y[i+1]
+            z1 = molecule.z[i+1]
+            print("x, y, z")
+            print(molecule.x[i+1], molecule.y[i+1], molecule.z[i+1])
+            print("-----------")
+            molecule.x[i+1] = round(((cos0 + t*(ux**2))*x1 + (t*ux*uy - sin0*uz)*y1 + (t*ux*uz + sin0*uy)*z1), 3) + Ax
+            molecule.y[i+1] = round(((t*ux*uy + sin0*uz)*x1 + (cos0 + t*(uy**2))*y1 + (t*uy*uz - sin0*ux)*z1), 3) + Ay
+            molecule.z[i+1] = round(((t*ux*uz - sin0*uy)*x1 + (t*uy*uz + sin0*ux)*y1 + (cos0 + t*(uz**2))*z1), 3) + Az
+            print(molecule.x[i+1], molecule.y[i+1], molecule.z[i+1])
+            print("END\n")
+            recursive_fast_rotate(molecule, i+2, Ax, Ay, Az, ux, uy, uz, cos0, sin0, t)
+
+def fast_rotate(molecule, a, b, theta):
+#    For the construction of the rotation matrix around the axis defined by the bond that
+#    connects atoms a and b (vector ab, a to b), there needs to be determined ab's unit vector, 
+#    which is mathematicaly defined by its original components divided by the square root
+#    of its magnitude.
+    
+    Ax = molecule.x[a-1]
+    Ay = molecule.y[a-1]
+    Az = molecule.z[a-1]
+    Bx = molecule.x[b-1]
+    By = molecule.y[b-1]
+    Bz = molecule.z[b-1]
+    M = (((Bx - Ax)**2) + ((By - Ay)**2) + ((Bz - Az)**2))**0.5
+    # M is the magnitude of the unit vector u
+    ux = (Bx - Ax)/M # x component of u
+    uy = (By - Ay)/M # y component of u
+    uz = (Bz - Az)/M # z component of u
+    cos0 = np.cos(theta) # cosine of the angle of rotation
+    sin0 = np.sin(theta) # sine of the angle of rotation
+    t = 1 - cos0
+    recursive_fast_rotate(molecule, b, Ax, Ay, Az, ux, uy, uz, cos0, sin0, t)
         
 def calculate_pot_energy(molecule):
     Vb = 0  # total elastic potential energy in the molecule
@@ -105,14 +150,16 @@ molecule = Molecule()
 molecule.read_psf("butane.psf")
 molecule.read_pdb("butane_opt.pdb")
 #molecule.read_frcmod("butane.frcmod")
-bond_list_C3 = molecule.get_bond_list(4)
-angle_list_C3 = molecule.get_angle_list(4)
-dihed_list_C3 = molecule.get_dihedral_list(4)
-#rotate(molecule, 2, 3, np.pi/2)
+bond_list_C3 = molecule.get_bond_list(3)
+angle_list_C3 = molecule.get_angle_list(3)
+dihed_list_C3 = molecule.get_dihedral_list(3)
+fast_rotate(molecule, 2, 3, np.pi/2)
 #Vb = calculate_pot_energy(molecule)
 #print("Vb =", Vb)
 #molecule.write_psf("butane1.psf")
-#molecule.write_pdb("butane1.pdb")
+molecule.write_pdb("butane_opt_rotated1.pdb")
+
+#CRYST1    0.000    0.000    0.000  90.00  90.00  90.00 P 1           1
 
 #for i in range(0, len(bond_list_C3), 2):
 #	print(bond_list_C3[i:i+2])
