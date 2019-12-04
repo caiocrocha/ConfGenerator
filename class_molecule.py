@@ -11,7 +11,7 @@ class Molecule:
         self.residue = list()   # residue name
         self.chain = list() # chain identifier
         self.res_num = list()   # residue sequence number
-        self.ins_code = list()   # insertion code for residues
+        self.ins_code = list()  # insertion code for residues
         self.x = list() # orthogonal coordinates for X (in Angstroms)
         self.y = list() # orthogonal coordinates for Y (in Angstroms)
         self.z = list() # orthogonal coordinates for Z (in Angstroms)
@@ -23,25 +23,26 @@ class Molecule:
         
     class Topology:
         def __init__(self):
-            self.segid = list()    # segment name
-            self.resid = list()   # residue id
+            self.segid = list() # segment name
+            self.resid = list() # residue id
             self.resname = list()   # residue name
-            self.name = list() # atom name
-            self.type = list() # atom type
-            self.charge = list() # charge
+            self.name = list()  # atom name
+            self.type = list()  # atom type
+            self.charge = list()    # charge
             self.mass = list()  # mass
-            self.num_bonds = 0 # number of chemical bonds
+            self.num_bonds = 0  # number of chemical bonds
             self.bond_matrix = None 
 #            Matrix of bonds, which is a symmetric matrix in its linear representation, for the sake of
 #            memory savings. The presence or absence of a bond between atoms (row, colune) is indicated 
 #            in self.bond_matrix[k], where k corresponds to indices (i, j) in the matricial representation.
-            self.num_angles = 0   # number of angles
+            self.num_angles = 0 # number of angles
             self.angle_list = list()    # list of angles - in triplets
             self.num_dihedrals = 0  # number of dihedrals (torsions)
             self.dihedral_list = list() # list of dihedrals - in quartets
-            self.bond_types = list()
-            self.k_elastic = list() # constants of proportionality for the elastic potential energy equations 
-            self.bond_lengths = list() # bond lengths
+            self.bond_types = dict()
+#            e.g. self.bond_types['c3-hc'][0] or self.bond_types['c3-hc'][1], where index 0 refers to
+#            the spring constant for the elastic potential energy equations and index 1 refers to 
+#            the bond length
             self.angles = list()    # angle values
 
 #    def get_cmd_line():
@@ -121,7 +122,8 @@ class Molecule:
 
     def write_psf(self, filename):
         with open(filename, "w+") as outf:
-            #outf.write("PSF CHEQ EXT XPLOR\n\n{:10d} !NTITLE\n\n\n{:10d} !NATOM\n".format(1, self.num_atoms))
+            outf.write("PSF CHEQ EXT XPLOR\n\n{:10d} !NTITLE\n\n\n".format(1))
+            outf.write("{:10d} !NATOM\n".format(self.num_atoms))
             for i in range(self.num_atoms):
                 outf.write("{:10d} {:5s}{:5d} {:>10s}     {:^5s}     {:5s}{:12.6f}  {:12.4f}\n".format(
                 i+1,
@@ -134,10 +136,20 @@ class Molecule:
                 self.topology.mass[i]))
             nbonds = self.topology.num_bonds
             outf.write("\n{:10d} !NBOND: bonds\n".format(nbonds))
-            for i in range(nbonds*2):
-                outf.write("{:>10d}".format(self.topology.bond_list[i]))
-                if(((i+1)%8 == 0 and i != 0) or (i == nbonds*2-1)):
-                    outf.write("\n")
+            count = 0
+            for i in range(1, self.num_atoms):
+                for j in range(i):
+                    if(self.topology.bond_matrix[int(i*(i-1)/2 + j)]):
+                        outf.write("{:>10d}{:>10d}".format(j+1, i+1))
+                        count = (count+1)%4
+                        if(count == 0):
+                            outf.write('\n')
+            if(count != 0):
+                outf.write('\n')
+#            for i in range(nbonds*2):
+#                outf.write("{:>10d}".format(self.topology.bond_list[i]))
+#                if(((i+1)%8 == 0 and i != 0) or (i == nbonds*2-1)):
+#                    outf.write("\n")
             outf.write("\n")
             nangles = self.topology.num_angles
             outf.write("{:10d} !NTHETA: angles\n".format(nangles))
@@ -249,18 +261,17 @@ class Molecule:
                 if "BOND" in line:
                     line = inf.readline()
                     while line.strip():
-                        self.topology.bond_types.append(line[0:5].strip())
-                        self.topology.k_elastic.append(float(line[5:13].strip()))
-                        self.topology.bond_lengths.append(float(line[13:21].strip()))
+                        self.topology.bond_types[line[0:5].strip()] = (
+                                [float(line[5:13].strip()), float(line[13:21].strip())])
                         line = inf.readline()
                 line = inf.readline()
                 
     def get_bond_list(self, a):
         blist = list()
         a = a-1
-        row = int(a*(a-1)/2)
+        k = int(a*(a-1)/2)
         for i in range(a):
-            if(self.topology.bond_matrix[row+i]):
+            if(self.topology.bond_matrix[k+i]):
                 blist.append(i+1)
         for i in range(a+1, self.num_atoms):
             if(self.topology.bond_matrix[int(i*(i-1)/2 + a)]):
@@ -285,4 +296,3 @@ class Molecule:
                 dlist.append(int(self.topology.dihedral_list[i+2]))
                 dlist.append(int(self.topology.dihedral_list[i+3]))
         return dlist
-    
