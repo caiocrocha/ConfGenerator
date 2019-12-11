@@ -5,45 +5,45 @@ from class_trimatrix import Trimatrix
 class Molecule:
     def __init__(self):
         self.topology = self.Topology()
-        self.id = list()    # "ATOM " or "HETATM"
-        self.atom = list()  # atom name
-        self.alt_loc = list()   # alternate location indicator
-        self.residue = list()   # residue name
-        self.chain = list() # chain identifier
-        self.res_num = list()   # residue sequence number
-        self.ins_code = list()  # insertion code for residues
-        self.x = list() # orthogonal coordinates for X (in Angstroms)
-        self.y = list() # orthogonal coordinates for Y (in Angstroms)
-        self.z = list() # orthogonal coordinates for Z (in Angstroms)
-        self.occup = list() # occupancy
-        self.temp = list()  # temperature factor
-        self.element = list()   # element symbol
-        self.charge = list()
+        self.id = []    # "ATOM " or "HETATM"
+        self.atom = []  # atom name
+        self.alt_loc = []   # alternate location indicator
+        self.residue = []   # residue name
+        self.chain = [] # chain identifier
+        self.res_num = []   # residue sequence number
+        self.ins_code = []  # insertion code for residues
+        self.x = [] # orthogonal coordinates for X (in Angstroms)
+        self.y = [] # orthogonal coordinates for Y (in Angstroms)
+        self.z = [] # orthogonal coordinates for Z (in Angstroms)
+        self.occup = [] # occupancy
+        self.temp = []  # temperature factor
+        self.element = []   # element symbol
+        self.charge = []
         self.num_atoms = 0  # number of atoms
         
     class Topology:
         def __init__(self):
-            self.segid = list() # segment name
-            self.resid = list() # residue id
-            self.resname = list()   # residue name
-            self.name = list()  # atom name
-            self.type = list()  # atom type
-            self.charge = list()    # charge
-            self.mass = list()  # mass
+            self.segid = [] # segment name
+            self.resid = [] # residue id
+            self.resname = []   # residue name
+            self.name = []  # atom name
+            self.type = []  # atom type
+            self.charge = []    # charge
+            self.mass = []  # mass
             self.num_bonds = 0  # number of chemical bonds
-            self.bond_matrix = None 
+            self.bond_matrix = None
 #            Matrix of bonds, which is a symmetric matrix in its linear representation, for the sake of
 #            memory savings. The presence or absence of a bond between atoms (row, colune) is indicated 
 #            in self.bond_matrix[k], where k corresponds to indices (i, j) in the matricial representation.
             self.num_angles = 0 # number of angles
-            self.angle_list = list()    # list of angles - in triplets
+            self.angle_list = []    # list of angles - in triplets
             self.num_dihedrals = 0  # number of dihedrals (torsions)
-            self.dihedral_list = list() # list of dihedrals - in quartets
-            self.bond_types = dict()
+            self.dihedral_list = [] # list of dihedrals - in quartets
+            self.bond_types = {}
 #            e.g. self.bond_types['c3-hc'][0] or self.bond_types['c3-hc'][1], where index 0 refers to
 #            the spring constant for the elastic potential energy equations and index 1 refers to 
 #            the bond length
-            self.angles = list()    # angle values
+            self.angles = []    # angle values
 
 #    def get_cmd_line():
 #        parser = argparse.ArgumentParser(description = 'PDB and PSF reader, chain rotator.')
@@ -231,9 +231,10 @@ class Molecule:
                     elif(('TER' in line) or ('END' in line)):
                         break
                     
-    def write_pdb(self, filename):
-        with open(filename, "w+") as outf:
-            outf.write("CRYST1    0.000    0.000    0.000  90.00  90.00  90.00 P 1           1\n")
+    def write_pdb(self, filename, mode, n):
+        with open(filename, mode) as outf:
+            outf.write("MODEL     {:4d}\n".format(n))
+#            outf.write("CRYST1    0.000    0.000    0.000  90.00  90.00  90.00 P 1           1\n")
             for i in range(self.num_atoms):
                 if(self.id[i] == 'ATOM' or self.id[i] == 'HETATM'):
                     outf.write("{:6s}{:5d} {:^4s}{:1s}{:3s} {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}{:6.2f}{:6.2f}      {:>2s}{:2s}\n".format(
@@ -267,7 +268,7 @@ class Molecule:
                 line = inf.readline()
                 
     def get_bond_list(self, a):
-        blist = list()
+        blist = []
         a = a-1
         k = int(a*(a-1)/2)
         for i in range(a):
@@ -279,7 +280,7 @@ class Molecule:
         return blist
     
     def get_angle_list(self, a):
-        alist = list()
+        alist = []
         for i in range(0, self.topology.num_angles*3, 3):
             if(a == int(self.topology.angle_list[i+1])):
                 alist.append(int(self.topology.angle_list[i]))
@@ -288,7 +289,7 @@ class Molecule:
         return alist
     
     def get_dihedral_list(self, a):
-        dlist = list()
+        dlist = []
         for i in range(0, self.topology.num_dihedrals*4, 4):
             if(a in self.topology.dihedral_list[i+1:i+3]):
                 dlist.append(int(self.topology.dihedral_list[i]))

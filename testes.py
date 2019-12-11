@@ -1,7 +1,20 @@
-import numpy as np
-import sys
-from itertools import chain
-import matplotlib.pyplot as plt
+#butane_opt.pdb
+#CRYST1    0.000    0.000    0.000  90.00  90.00  90.00 P 1           1
+#ATOM      1  C1  BUT S   1       2.913   1.158  -1.990  0.00  0.00      SYS   
+#ATOM      2  C2  BUT S   1       1.285   0.913  -1.606  0.00  0.00      SYS   
+#ATOM      3  C3  BUT S   1       1.069  -0.008  -0.123  0.00  0.00      SYS   
+#ATOM      4  C4  BUT S   1      -0.495  -0.311   0.434  0.00  0.00      SYS   
+#ATOM      5  H1  BUT S   1       3.527   1.241  -1.075  0.00  0.00      SYS   
+#ATOM      6  H2  BUT S   1       3.317   0.314  -2.570  0.00  0.00      SYS   
+#ATOM      7  H3  BUT S   1       3.058   2.075  -2.573  0.00  0.00      SYS   
+#ATOM      8  H4  BUT S   1       0.774   1.885  -1.517  0.00  0.00      SYS   
+#ATOM      9  H5  BUT S   1       0.791   0.385  -2.436  0.00  0.00      SYS   
+#ATOM     10  H6  BUT S   1       1.591  -0.972  -0.233  0.00  0.00      SYS   
+#ATOM     11  H7  BUT S   1       1.616   0.513   0.679  0.00  0.00      SYS   
+#ATOM     12  H8  BUT S   1      -0.542  -0.263   1.531  0.00  0.00      SYS   
+#ATOM     13  H9  BUT S   1      -1.207   0.432   0.030  0.00  0.00      SYS   
+#ATOM     14  H10 BUT S   1      -0.842  -1.300   0.113  0.00  0.00      SYS   
+#END
 
 #Liste todos os ângulos em que o atomo 3 é o centro.
 #
@@ -42,6 +55,11 @@ import matplotlib.pyplot as plt
 #Liste todos os atomos que devem ser rodados na torcao 2-3, do lado do atomo 3.
 #
 #Resposta: 3, 4, 10, 11, 12, 13, 14
+
+import numpy as np
+import sys
+from itertools import chain
+import matplotlib.pyplot as plt
 
 def iter_data(fileobj):
     for line in fileobj:
@@ -167,8 +185,8 @@ V = [28.51788850870531,
      28.64762501248959,
      28.64762501248959]
 
-for i in range(len(V)):
-    plt.plot(i, V[i])
-plt.xlabel('Iteracao')
-plt.ylabel('Potencial')
-plt.show()
+#for i in range(len(V)):
+#    plt.plot(i, V[i])   # nao funciona
+#plt.xlabel('Iteracao')
+#plt.ylabel('Potencial')
+#plt.show()
