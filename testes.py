@@ -190,3 +190,30 @@ V = [28.51788850870531,
 #plt.xlabel('Iteracao')
 #plt.ylabel('Potencial')
 #plt.show()
+
+#Remark line goes here
+#MASS
+#c3 12.010        0.878
+#hc 1.008         0.135
+#
+#BOND
+#c3-c3  300.90 K  1.538 b0
+#c3-hc  330.60   1.097
+#
+#ANGLE
+#c3-c3-c3   62.860 K angulo    111.510 angulo eq (graus)
+#c3-c3-hc   46.340     109.800
+#hc-c3-hc   39.400     107.580
+#
+#DIHE
+#c3-c3-c3-c3   1    0.180 K        0.000 angulo         -3.000 multiplicidade
+#c3-c3-c3-c3   1    0.250       180.000          -2.000
+#c3-c3-c3-c3   1    0.200       180.000           1.000
+#c3-c3-c3-hc   1    0.160         0.000           3.000
+#hc-c3-c3-hc   1    0.150         0.000           3.000
+#
+#IMPROPER
+#
+#NONBON
+#  c3          1.9080  0.1094
+#  hc          1.4870  0.0157

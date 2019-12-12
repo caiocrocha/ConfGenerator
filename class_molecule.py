@@ -31,6 +31,7 @@ class Molecule:
             self.charge = []    # charge
             self.mass = []  # mass
             self.num_bonds = 0  # number of chemical bonds
+            self.bond_list = []
             self.bond_matrix = None
 #            Matrix of bonds, which is a symmetric matrix in its linear representation, for the sake of
 #            memory savings. The presence or absence of a bond between atoms (row, colune) is indicated 
@@ -86,13 +87,14 @@ class Molecule:
                         self.topology.mass[i] = line[7]
                 elif("!NBOND" in line):
                     self.topology.num_bonds = int(line.split()[0])
+                    nbonds = 2*self.topology.num_bonds
+                    count = 0
                     self.topology.bond_matrix = np.zeros(Trimatrix.get_size(self.num_atoms), dtype=bool)
                     while line:
-                        line = inf.readline().strip()
-                        if not line:
-                            break
-                        line = line.split()
+                        line = inf.readline().split()
                         for i in range(0, len(line), 2):
+                            self.topology.bond_list.append(int(line[i]))
+                            self.topology.bond_list.append(int(line[i+1]))
                             self.topology.bond_matrix[Trimatrix.get_index(int(line[i])-1, int(line[i+1])-1)] = True
                 elif("!NTHETA" in line):
                     nangles = self.topology.num_angles = int(line.split()[0])

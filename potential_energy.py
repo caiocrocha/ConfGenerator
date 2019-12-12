@@ -26,7 +26,34 @@ def calculate_pot_energy(molecule):
                      ((molecule.z[atom] - molecule.z[i])**2))**0.5
                 d = b-b0
                 Vb += K*(d**2) # acumulates the potential energy of the bond
+                print(atom,i,d,Vb)
+                
     return Vb
+
+
+def bond_potential(molecule) :
+    # Imprima a lista de ligacoes, com as distancias e o Vb para cada uma delas.
+    for i in range(0, molecule.topology.num_bonds*2,2):
+        k=molecule.topology.bond_list[i]-1
+        l=molecule.topology.bond_list[i+1]-1
+        b = (((molecule.x[k] - molecule.x[l])**2) + 
+            ((molecule.y[k] - molecule.y[l])**2) + 
+            ((molecule.z[k] - molecule.z[l])**2))**0.5
+        btype = ('{}-{}'.format(molecule.topology.type[k], 
+                        molecule.topology.type[l])) # bond type (e.g. 'c3-c3' or 'c3-hc')
+        try:
+            K = molecule.topology.bond_types[btype][0]  # elastic constant of the bond
+            b0 = molecule.topology.bond_types[btype][1] # equilibrium bond length
+        except:
+            btype = ('{}-{}'.format(molecule.topology.type[l], 
+                    molecule.topology.type[k]))
+            try:
+                K = molecule.topology.bond_types[btype][0]
+                b0 = molecule.topology.bond_types[btype][1]
+            except: pass
+        d = b-b0
+        Vb = K*(d**2) # acumulates the potential energy of the bond     
+        print(k+1, l+1, '%5.3f %5.3f' % (b, Vb))
 
 def pot_energy_rotate(molecule, a, b, theta, ntimes, filename, pdf_name):
     molecule.write_pdb(filename, 'w+', 0)
@@ -61,6 +88,7 @@ molecule = Molecule()
 molecule.read_psf("butane.psf")
 molecule.read_pdb("butane_opt.pdb")
 molecule.read_frcmod("butane.frcmod")
-#Vb = calculate_pot_energy(molecule)
-Vb = pot_energy_rotate(molecule, a=2, b=3, theta=2*np.pi, ntimes=360, 
-                      filename='butane_opt1.pdb', pdf_name='Ep_butane_opt_360.pdf')
+##Vb = calculate_pot_energy(molecule)
+#Vb = pot_energy_rotate(molecule, a=2, b=3, theta=2*np.pi, ntimes=360, 
+#                      filename='butane_opt1.pdb', pdf_name='Ep_butane_opt_360.pdf')
+bond_potential(molecule)

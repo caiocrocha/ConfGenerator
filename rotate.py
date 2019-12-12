@@ -58,15 +58,15 @@ def recursive_rotate_list(molecule, atom, previous, rlist):
             rlist.append(i)
             recursive_rotate_list(molecule, i, atom, rlist)
     
-def rotate(molecule, a, b, theta, ntimes, filename): 
+def rotate(molecule, a, b, theta, ntimes,filename): 
     init_rotation_axis(molecule, a, b, theta, ntimes)
     rlist = []
-    molecule.write_pdb(filename, 'w+', 0)
+#    molecule.write_pdb(filename, 'w+', 0)
     recursive_rotate_list(molecule, b-1, a-1, rlist)
     for i in range(ntimes):
         for atom in rlist:
             rotate_atom(molecule, atom)
-        molecule.write_pdb(filename, 'a', i+1)
+#        molecule.write_pdb(filename, 'a', i+1)
                       
 molecule = Molecule()
 
@@ -74,8 +74,17 @@ molecule = Molecule()
 
 molecule.read_psf("butane.psf")
 molecule.read_pdb("butane_opt.pdb")
-rotate(molecule, 2, 3, 2*np.pi, 360, 'butane_opt.pdb')
-#fast_rotate(molecule, a=2, b=3, theta=np.pi/2)
+
+#rotate(molecule, 2, 3, 2*np.pi, 360, 'butane_opt.pdb')
+
+#def f1():
+#    for i in range(360):
+#        fast_rotate(molecule, a=1, b=2, theta=np.pi/180)
+#        for j in range(360):
+#            fast_rotate(molecule, a=2, b=3, theta=np.pi/180)
+#            rotate(molecule, a=3, b=4, theta=2*np.pi, ntimes=360)
+#f1()
+
 #molecule.write_pdb("butane_opt1.pdb", 'w+', 0)
 #theta = np.pi/180
 #for i in range(360):
