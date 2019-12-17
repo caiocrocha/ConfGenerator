@@ -1,0 +1,222 @@
+MODEL        0
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   2.000   0.000  0.00  0.00      SYS  
+END
+MODEL        1
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   1.970   0.347  0.00  0.00      SYS  
+END
+MODEL        2
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   1.879   0.684  0.00  0.00      SYS  
+END
+MODEL        3
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   1.732   1.000  0.00  0.00      SYS  
+END
+MODEL        4
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   1.532   1.286  0.00  0.00      SYS  
+END
+MODEL        5
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   1.286   1.532  0.00  0.00      SYS  
+END
+MODEL        6
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   1.000   1.732  0.00  0.00      SYS  
+END
+MODEL        7
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   0.684   1.879  0.00  0.00      SYS  
+END
+MODEL        8
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   0.347   1.970  0.00  0.00      SYS  
+END
+MODEL        9
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -0.000   2.000  0.00  0.00      SYS  
+END
+MODEL       10
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -0.347   1.970  0.00  0.00      SYS  
+END
+MODEL       11
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -0.684   1.879  0.00  0.00      SYS  
+END
+MODEL       12
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -1.000   1.732  0.00  0.00      SYS  
+END
+MODEL       13
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -1.286   1.532  0.00  0.00      SYS  
+END
+MODEL       14
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -1.532   1.286  0.00  0.00      SYS  
+END
+MODEL       15
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -1.732   1.000  0.00  0.00      SYS  
+END
+MODEL       16
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -1.879   0.684  0.00  0.00      SYS  
+END
+MODEL       17
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -1.970   0.347  0.00  0.00      SYS  
+END
+MODEL       18
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -2.000  -0.000  0.00  0.00      SYS  
+END
+MODEL       19
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -1.970  -0.347  0.00  0.00      SYS  
+END
+MODEL       20
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -1.879  -0.684  0.00  0.00      SYS  
+END
+MODEL       21
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -1.732  -1.000  0.00  0.00      SYS  
+END
+MODEL       22
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -1.532  -1.286  0.00  0.00      SYS  
+END
+MODEL       23
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -1.286  -1.532  0.00  0.00      SYS  
+END
+MODEL       24
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -1.000  -1.732  0.00  0.00      SYS  
+END
+MODEL       25
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -0.684  -1.879  0.00  0.00      SYS  
+END
+MODEL       26
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000  -0.347  -1.970  0.00  0.00      SYS  
+END
+MODEL       27
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   0.000  -2.000  0.00  0.00      SYS  
+END
+MODEL       28
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   0.347  -1.970  0.00  0.00      SYS  
+END
+MODEL       29
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   0.684  -1.879  0.00  0.00      SYS  
+END
+MODEL       30
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   1.000  -1.732  0.00  0.00      SYS  
+END
+MODEL       31
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   1.286  -1.532  0.00  0.00      SYS  
+END
+MODEL       32
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   1.532  -1.286  0.00  0.00      SYS  
+END
+MODEL       33
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   1.732  -1.000  0.00  0.00      SYS  
+END
+MODEL       34
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   1.879  -0.684  0.00  0.00      SYS  
+END
+MODEL       35
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   1.970  -0.347  0.00  0.00      SYS  
+END
+MODEL       36
+ATOM      1  C1  BUT S   1       0.000  -2.000   0.000  0.00  0.00      SYS  
+ATOM      2  C2  BUT S   1       0.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      3  C3  BUT S   1       2.000   0.000   0.000  0.00  0.00      SYS  
+ATOM      4  C4  BUT S   1       2.000   2.000   0.000  0.00  0.00      SYS  
+END

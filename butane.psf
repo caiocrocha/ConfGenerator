@@ -4,20 +4,20 @@ PSF CHEQ EXT XPLOR
 
 
         14 !NATOM
-         1 SYS      1        BUT      C1       c3      -0.065400       12.0100           
-         2 SYS      1        BUT      C2       c3      -0.056400       12.0100           
-         3 SYS      1        BUT      C3       c3      -0.056400       12.0100           
-         4 SYS      1        BUT      C4       c3      -0.065400       12.0100           
-         5 SYS      1        BUT      H1       hc       0.023000        1.0080           
-         6 SYS      1        BUT      H2       hc       0.023000        1.0080           
-         7 SYS      1        BUT      H3       hc       0.023000        1.0080           
-         8 SYS      1        BUT      H4       hc       0.026300        1.0080           
-         9 SYS      1        BUT      H5       hc       0.026300        1.0080           
-        10 SYS      1        BUT      H6       hc       0.026300        1.0080           
-        11 SYS      1        BUT      H7       hc       0.026300        1.0080           
-        12 SYS      1        BUT      H8       hc       0.023000        1.0080           
-        13 SYS      1        BUT      H9       hc       0.023000        1.0080           
-        14 SYS      1        BUT      H10      hc       0.023000        1.0080           
+         1 SYS      1        BUT      C1       c3      -0.065430       12.0078
+         2 SYS      1        BUT      C2       c3      -0.056396       12.0078
+         3 SYS      1        BUT      C3       c3      -0.056396       12.0078
+         4 SYS      1        BUT      C4       c3      -0.065430       12.0078
+         5 SYS      1        BUT      H1       hc       0.022995        1.0078
+         6 SYS      1        BUT      H2       hc       0.022995        1.0078
+         7 SYS      1        BUT      H3       hc       0.022995        1.0078
+         8 SYS      1        BUT      H4       hc       0.026306        1.0078
+         9 SYS      1        BUT      H5       hc       0.026306        1.0078
+        10 SYS      1        BUT      H6       hc       0.026306        1.0078
+        11 SYS      1        BUT      H7       hc       0.026306        1.0078
+        12 SYS      1        BUT      H8       hc       0.022995        1.0078
+        13 SYS      1        BUT      H9       hc       0.022995        1.0078
+        14 SYS      1        BUT      H10      hc       0.022995        1.0078
 
         13 !NBOND: bonds
          1         2         2         3         3         4         1         5
@@ -64,8 +64,3 @@ PSF CHEQ EXT XPLOR
 
          0         0         0         0         0         0         0         0
          0         0         0         0         0         0
-
-         1         0 !NGRP NST2
-         0         2         0
-
-         0 !NCRTERM: cross-terms

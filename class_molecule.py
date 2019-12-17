@@ -1,11 +1,15 @@
 import argparse
 import numpy as np
+import math
 from class_trimatrix import Trimatrix
+
+def is_main():
+    return __name__ == '__main__'
 
 class Molecule:
     def __init__(self):
         self.topology = self.Topology()
-        self.id = []    # "ATOM " or "HETATM"
+        self.id = []    # 'ATOM' or 'HETATM'
         self.atom = []  # atom name
         self.alt_loc = []   # alternate location indicator
         self.residue = []   # residue name
@@ -33,41 +37,46 @@ class Molecule:
             self.num_bonds = 0  # number of chemical bonds
             self.bond_list = []
             self.bond_matrix = None
-#            Matrix of bonds, which is a symmetric matrix in its linear representation, for the sake of
-#            memory savings. The presence or absence of a bond between atoms (row, colune) is indicated 
-#            in self.bond_matrix[k], where k corresponds to indices (i, j) in the matricial representation.
+            # Matrix of bonds, which is a symmetric matrix in its linear 
+            # representation, for the sake of memory savings. The presence or 
+            # absence of a bond between atoms (row, colune) is indicated in 
+            # self.bond_matrix[k], where k corresponds to indices (i, j) in the 
+            # matricial representation.
             self.num_angles = 0 # number of angles
             self.angle_list = []    # list of angles - in triplets
             self.num_dihedrals = 0  # number of dihedrals (torsions)
             self.dihedral_list = [] # list of dihedrals - in quartets
             self.bond_types = {}
-#            e.g. self.bond_types['c3-hc'][0] or self.bond_types['c3-hc'][1], where index 0 refers to
-#            the spring constant for the elastic potential energy equations and index 1 refers to 
-#            the bond length
-            self.angles = []    # angle values
+            # e.g. self.bond_types['c3-hc'][0] or self.bond_types['c3-hc'][1], where 
+            # index 0 refers to the "spring" constant for the elastic potential energy 
+            # equations and index 1 refers to the equilibrium bond length.
+            self.angle_types = {}
+            # e.g. self.angle_types['hc-c3-hc'][0] or self.bond_types['hc-c3-hc'][1], 
+            # where index 0 refers to the angle "spring" constant and index 1 refers 
+            # to the equilibrium angle converted to radians.
+            self.dihedral_types = {}
 
-#    def get_cmd_line():
-#        parser = argparse.ArgumentParser(description = 'PDB and PSF reader, chain rotator.')
-#    
-#        parser.add_argument('--pdb', action = 'store',     dest = 'pdb', required = True, help = 'PDB file.')
-#        parser.add_argument('--psf', action = 'store',     dest = 'psf', required = True, help = 'PSF file.')
-#        parser.add_argument('--new_pdb', action = 'store',     dest = 'new_pdb', required = True, help = 'New PDB file.')
-#        parser.add_argument('--new_psf', action = 'store',     dest = 'new_psf', required = True, help = 'New PSF file.')
-#    
-#        arguments = parser.parse_args()
-#    
-#    
-#        # Assign from cmd line.
-#        return (arguments.pdb,
-#                arguments.psf,
-#                arguments.new_pdb,
-#                arguments.new_psf)  
+    # def get_cmd_line():
+    #     parser = argparse.ArgumentParser(description = 'PDB and PSF reader, chain rotator.')
+    
+    #     parser.add_argument('--pdb', action = 'store',     dest = 'pdb', required = True, help = 'PDB file.')
+    #     parser.add_argument('--psf', action = 'store',     dest = 'psf', required = True, help = 'PSF file.')
+    #     parser.add_argument('--new_pdb', action = 'store',     dest = 'new_pdb', required = True, help = 'New PDB file.')
+    #     parser.add_argument('--new_psf', action = 'store',     dest = 'new_psf', required = True, help = 'New PSF file.')
+    
+    #     arguments = parser.parse_args()
+    
+    #     # Assign from cmd line.
+    #     return (arguments.pdb,
+    #             arguments.psf,
+    #             arguments.new_pdb,
+    #             arguments.new_psf)  
     
     def read_psf(self, filename):
-        with open(filename, "r") as inf:
+        with open(filename, 'r') as inf:
             line = inf.readline()
             while line:
-                if("!NATOM" in line):
+                if('!NATOM' in line):
                     natoms = self.num_atoms = int(line.split()[0])
                     self.topology.segid = np.empty(natoms, dtype='U3')
                     self.topology.resid = np.zeros(natoms, dtype='uint8')
@@ -85,22 +94,27 @@ class Molecule:
                         self.topology.type[i] = line[5]
                         self.topology.charge[i] = line[6]
                         self.topology.mass[i] = line[7]
-                elif("!NBOND" in line):
-                    self.topology.num_bonds = int(line.split()[0])
-                    nbonds = 2*self.topology.num_bonds
+                elif('!NBOND' in line):
+                    nbonds = int(line.split()[0])
+                    self.topology.num_bonds = nbonds
+                    num_lines = math.ceil(nbonds/4)
+                    self.topology.bond_list = np.zeros(nbonds*2, dtype='uint8')
+                    self.topology.bond_matrix = np.zeros(Trimatrix.get_size(
+                        self.num_atoms
+                        ), dtype=bool)
                     count = 0
-                    self.topology.bond_matrix = np.zeros(Trimatrix.get_size(self.num_atoms), dtype=bool)
-                    while line:
+                    for i in range(num_lines):
                         line = inf.readline().split()
-                        for i in range(0, len(line), 2):
-                            self.topology.bond_list.append(int(line[i]))
-                            self.topology.bond_list.append(int(line[i+1]))
-                            self.topology.bond_matrix[Trimatrix.get_index(int(line[i])-1, int(line[i+1])-1)] = True
-                elif("!NTHETA" in line):
+                        for j in range(0, len(line), 2):
+                            self.topology.bond_matrix[Trimatrix.get_index(
+                                int(line[j])-1, int(line[j+1])-1
+                                )] = True
+                            self.topology.bond_list[count] = line[j]
+                            self.topology.bond_list[count+1] = line[j+1]
+                            count += 2
+                elif('!NTHETA' in line):
                     nangles = self.topology.num_angles = int(line.split()[0])
-                    num_lines = int(nangles/3)
-                    if(nangles%2 != 0):
-                        num_lines+=1
+                    num_lines = math.ceil(nangles/3)
                     self.topology.angle_list = np.zeros(nangles*3, dtype='uint8')
                     count = 0
                     for i in range(num_lines):
@@ -108,11 +122,9 @@ class Molecule:
                         for j in range(len(line)):
                             self.topology.angle_list[count] = line[j]
                             count+=1
-                elif("!NPHI" in line):
+                elif('!NPHI' in line):
                     ndihed = self.topology.num_dihedrals = int(line.split()[0])
-                    num_lines = int(ndihed/2)
-                    if(ndihed%2 != 0):
-                        num_lines+=1
+                    num_lines = math.ceil(ndihed/2)
                     self.topology.dihedral_list = np.zeros(ndihed*4, dtype='uint8')
                     count = 0
                     for i in range(num_lines):
@@ -123,11 +135,12 @@ class Molecule:
                 line = inf.readline()
 
     def write_psf(self, filename):
-        with open(filename, "w+") as outf:
-            outf.write("PSF CHEQ EXT XPLOR\n\n{:10d} !NTITLE\n\n\n".format(1))
-            outf.write("{:10d} !NATOM\n".format(self.num_atoms))
+        with open(filename, 'w+') as outf:
+            outf.write('PSF CHEQ EXT XPLOR\n\n{:10d} !NTITLE\n\n\n'.format(1))
+            natoms = self.num_atoms
+            outf.write('{:10d} !NATOM\n'.format(natoms))
             for i in range(self.num_atoms):
-                outf.write("{:10d} {:5s}{:5d} {:>10s}     {:^5s}     {:5s}{:12.6f}  {:12.4f}\n".format(
+                outf.write('{:10d} {:5s}{:5d} {:>10s}     {:^5s}     {:5s}{:12.6f}  {:12.4f}\n'.format(
                 i+1,
                 self.topology.segid[i],
                 self.topology.resid[i],
@@ -135,49 +148,48 @@ class Molecule:
                 self.topology.name[i],
                 self.topology.type[i],
                 self.topology.charge[i],
-                self.topology.mass[i]))
+                self.topology.mass[i])
+                    )
             nbonds = self.topology.num_bonds
-            outf.write("\n{:10d} !NBOND: bonds\n".format(nbonds))
-            count = 0
-            for i in range(1, self.num_atoms):
-                for j in range(i):
-                    if(self.topology.bond_matrix[int(i*(i-1)/2 + j)]):
-                        outf.write("{:>10d}{:>10d}".format(j+1, i+1))
-                        count = (count+1)%4
-                        if(count == 0):
-                            outf.write('\n')
-            if(count != 0):
-                outf.write('\n')
-#            for i in range(nbonds*2):
-#                outf.write("{:>10d}".format(self.topology.bond_list[i]))
-#                if(((i+1)%8 == 0 and i != 0) or (i == nbonds*2-1)):
-#                    outf.write("\n")
-            outf.write("\n")
+            outf.write('\n{:10d} !NBOND: bonds\n'.format(nbonds))
+            for i in range(nbonds*2):
+                outf.write('{:>10d}'.format(self.topology.bond_list[i]))
+                if(((i+1)%8 == 0 and i != 0) or (i == nbonds*2-1)):
+                    outf.write('\n')
+            outf.write('\n')
             nangles = self.topology.num_angles
-            outf.write("{:10d} !NTHETA: angles\n".format(nangles))
+            outf.write('{:10d} !NTHETA: angles\n'.format(nangles))
             for i in range(nangles*3):
-                outf.write("{:>10d}".format(self.topology.angle_list[i]))
+                outf.write('{:>10d}'.format(self.topology.angle_list[i]))
                 if(((i+1)%9 == 0 and i != 0) or (i == nangles*3-1)):
-                    outf.write("\n")
-            outf.write("\n")
+                    outf.write('\n')
+            outf.write('\n')
             ndihed = self.topology.num_dihedrals
-            outf.write("{:10d} !NPHI: dihedrals\n".format(ndihed))
+            outf.write('{:10d} !NPHI: dihedrals\n'.format(ndihed))
             for i in range(ndihed*4):
-                outf.write("{:>10d}".format(self.topology.dihedral_list[i]))
+                outf.write('{:>10d}'.format(self.topology.dihedral_list[i]))
                 if(((i+1)%8 == 0 and i != 0) or (i == ndihed*4-1)):
-                    outf.write("\n")
-            outf.write("\n")
+                    outf.write('\n')
+            outf.write('\n')
+            outf.write('{:10d} !NIMPHI: impropers\n\n\n'.format(0))
+            outf.write('{:10d} !NDON: donors\n\n\n'.format(0))
+            outf.write('{:10d} !NACC: acceptors\n\n\n'.format(0))
+            outf.write('{:10d} !NNB\n\n'.format(0))
+            for i in range(natoms):
+               outf.write('{:>10d}'.format(0))
+               if(((i+1)%8 == 0 and i != 0) or (i == natoms-1)):
+                    outf.write('\n')
             
     def read_pdb(self, filename):
-        with open(filename, "r") as inf:
+        with open(filename, 'r') as inf:
             if(self.num_atoms != 0):
-#                Statically allocates memory as long as there has already been a 
-#                corresponding .psf file read, which will determine for the function 
-#                the number of spaces (number of atoms) that need to be preallocated. 
-#                Static allocation is preferable over dynamic allocation, since it
-#                uses numpy arrays, which can save up memory by limiting the variables 
-#                sizes. Also, the 'append' method is slower than preallocating the 
-#                elements and assigning them values.
+                # Statically allocates memory as long as there has already been a 
+                # corresponding .psf file read, which will determine to the function 
+                # the number of spaces (number of atoms) that need to be preallocated. 
+                # Static allocation is preferable over dynamic allocation, since it
+                # uses numpy arrays, which can save up memory by limiting the variables 
+                # sizes. Also, the 'append' method is slower than preallocating the 
+                # elements and then assigning them values.
                 natoms = self.num_atoms
                 self.id = np.empty(natoms, dtype='U6')
                 self.atom = np.empty(natoms, dtype='U4')
@@ -235,11 +247,11 @@ class Molecule:
                     
     def write_pdb(self, filename, mode, n):
         with open(filename, mode) as outf:
-            outf.write("MODEL     {:4d}\n".format(n))
-#            outf.write("CRYST1    0.000    0.000    0.000  90.00  90.00  90.00 P 1           1\n")
+            outf.write('MODEL     {:4d}\n'.format(n))
+            # outf.write('CRYST1    0.000    0.000    0.000  90.00  90.00  90.00 P 1           1\n')
             for i in range(self.num_atoms):
                 if(self.id[i] == 'ATOM' or self.id[i] == 'HETATM'):
-                    outf.write("{:6s}{:5d} {:^4s}{:1s}{:3s} {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}{:6.2f}{:6.2f}      {:>2s}{:2s}\n".format(
+                    outf.write('{:6s}{:5d} {:^4s}{:1s}{:3s} {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}{:6.2f}{:6.2f}      {:>2s}{:2s}\n'.format(
                     self.id[i],
                     i+1,    # atom serial number
                     self.atom[i],
@@ -255,17 +267,26 @@ class Molecule:
                     self.temp[i],
                     self.element[i],
                     self.charge[i]))
-            outf.write("END\n")
+            outf.write('END\n')
 
     def read_frcmod(self, filename):
-        with open(filename, "r") as inf:
+        with open(filename, 'r') as inf:
             line = inf.readline()
             while line:
-                if "BOND" in line:
+                if 'BOND' in line:
                     line = inf.readline()
                     while line.strip():
                         self.topology.bond_types[line[0:5].strip()] = (
-                                [float(line[5:13].strip()), float(line[13:21].strip())])
+                            (float(line[5:13].strip()), float(line[13:21].strip()))
+                            )
+                        line = inf.readline()
+                elif 'ANGLE' in line:
+                    line = inf.readline()
+                    while line.strip():
+                        angle_rad = float(line[17:29].strip())*np.pi/180
+                        self.topology.angle_types[line[0:8].strip()] = (
+                            (float(line[8:17].strip()), angle_rad)
+                            )
                         line = inf.readline()
                 line = inf.readline()
                 
@@ -299,3 +320,8 @@ class Molecule:
                 dlist.append(int(self.topology.dihedral_list[i+2]))
                 dlist.append(int(self.topology.dihedral_list[i+3]))
         return dlist
+    
+##############################################################################
+if is_main():
+    # code here
+    pass

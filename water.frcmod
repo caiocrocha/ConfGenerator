@@ -1,0 +1,25 @@
+Remark line goes here
+MASS
+OW 16.000        0.465               same as ow 
+HW 1.008         0.135               same as hw 
+
+BOND
+HW-OW  553.00   0.957       same as ow-hw, penalty score=  0.0
+HW-HW  553.00   1.514       same as hw-hw, penalty score=  0.0
+
+ANGLE
+HW-HW-OW    0.000     127.740   same as hw-hw-ow, penalty score=  0.0
+HW-OW-HW  100.000     104.520   same as hw-ow-hw, penalty score=  0.0
+
+DIHE
+OW-HW-HW-OW   1    0.000         0.000           0.000      ATTN, need revision
+HW-HW-OW-HW   1    0.000         0.000           0.000      ATTN, need revision
+
+IMPROPER
+
+NONBON
+  OW          1.7683  0.1520             same as ow 
+  HW          0.0000  0.0000             same as hw 
+
+
+
