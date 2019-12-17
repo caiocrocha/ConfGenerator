@@ -288,6 +288,18 @@ class Molecule:
                             (float(line[8:17].strip()), angle_rad)
                             )
                         line = inf.readline()
+                elif 'DIHE' in line:
+                    line = inf.readline()
+                    while line.strip():
+                        key = line[0:11]
+                        angle_rad = float(line[24:38].strip())*np.pi/180
+                        line = [int(line[11:15].strip()), float(line[15:24].strip()), 
+                                 angle_rad, float(line[38:54].strip())]
+                        if key not in self.topology.dihedral_types.keys():
+                            self.topology.dihedral_types[key] = [line]
+                        else:
+                            self.topology.dihedral_types[key].append(line)
+                        line = inf.readline()
                 line = inf.readline()
                 
     def get_bond_list(self, a):
