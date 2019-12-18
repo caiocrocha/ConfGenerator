@@ -7,6 +7,8 @@ from rotate import get_rotation_list, init_rotation_axis, rotate_atom
 def is_main():
     return __name__ == '__main__'
 
+
+#%%
 def dihedral_Ep_rotate(molecule, a, b, theta, ntimes, pdf_name, 
                       write_pdb=False, pdb_name=None):
     times = ntimes + 1
@@ -299,11 +301,16 @@ def dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4):
                                   molecule.topology.type[atom4])
             )  # dihedral type (e.g. 'c3-c3-c3-hc' or 'c3-c3-c3-c3')
     try:
-        for i in range(len(molecule.topology.dihedral_types[dtype])):
-            A1 = molecule.topology.dihedral_types[dtype][i][0]
-            A2 = molecule.topology.dihedral_types[dtype][i][1]
-            A3 = molecule.topology.dihedral_types[dtype][i][2]
-            A4 = molecule.topology.dihedral_types[dtype][i][3]
+        length = len(molecule.topology.dihedral_types[dtype])
+        A1 = np.zeros(length)
+        A2 = np.zeros(length)
+        A3 = np.zeros(length)
+        A4 = np.zeros(length)
+        for i in range(length):
+            A1[i] = molecule.topology.dihedral_types[dtype][i][0]
+            A2[i] = molecule.topology.dihedral_types[dtype][i][1]
+            A3[i] = molecule.topology.dihedral_types[dtype][i][2]
+            A4[i] = molecule.topology.dihedral_types[dtype][i][3]
     except:
         dtype = ('{}-{}-{}-{}'.format(molecule.topology.type[atom4], 
                                       molecule.topology.type[atom3], 
@@ -311,11 +318,17 @@ def dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4):
                                       molecule.topology.type[atom1])
                 )  # dihedral type (e.g. 'c3-c3-c3-hc' or 'c3-c3-c3-c3')
         try:
-            for i in range(len(molecule.topology.dihedral_types[dtype])):
-                A1 = molecule.topology.dihedral_types[dtype][i][0]
-                A2 = molecule.topology.dihedral_types[dtype][i][1]
-                A3 = molecule.topology.dihedral_types[dtype][i][2]
-                A4 = molecule.topology.dihedral_types[dtype][i][3]
+            length = len(molecule.topology.dihedral_types[dtype])
+            A1 = np.zeros(length)
+            A2 = np.zeros(length)
+            A3 = np.zeros(length)
+            A4 = np.zeros(length)
+
+            for i in range(length):
+                A1[i] = molecule.topology.dihedral_types[dtype][i][0]
+                A2[i] = molecule.topology.dihedral_types[dtype][i][1]
+                A3[i] = molecule.topology.dihedral_types[dtype][i][2]
+                A4[i] = molecule.topology.dihedral_types[dtype][i][3]
         except: pass
     
     n1x, n1y, n1z = cross_product_3d(
@@ -329,7 +342,7 @@ def dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4):
     M2 = (n2x*n2x + n2y*n2y + n2z*n2z)**0.5 # magnitude of n2
     cos0 = (n1x*n2x + n1y*n2y + n1z*n2z)/(M1*M2)
     dihed_angle = math.acos(round(cos0, 6))
-    return A1, A2, A3, A4, dihed_angle
+    return length, A1, A2, A3, A4, dihed_angle
         
 def dihedral_force_variables(molecule, atom1, atom2, atom3, atom4):
     x1 = molecule.x[atom1]
@@ -444,24 +457,33 @@ def dihedral_force_variables(molecule, atom1, atom2, atom3, atom4):
     f2z = -f1z - f3z - f4z
     return f1x, f1y, f1z, f2x, f2y, f2z, f3x, f3y, f3z, f4x, f4y, f4z
 
-def dihedral_potential(molecule):
+def dihedral_potential(molecule, ForceField = 'gaff'):
     ndihed = molecule.topology.num_dihedrals
     Vd = 0
     # Vd = np.zeros(ndihed, dtype='float32')
     # count = 0
     for i in range(0, ndihed*4, 4):
-        A1, A2, A3, A4, dihed_angle = dihedral_pot_variables(molecule, 
+        length,A1, A2, A3, A4, dihed_angle = dihedral_pot_variables(molecule, 
             atom1 = molecule.topology.dihedral_list[i]-1, 
             atom2 = molecule.topology.dihedral_list[i+1]-1, 
             atom3 = molecule.topology.dihedral_list[i+2]-1, 
             atom4 = molecule.topology.dihedral_list[i+3]-1)
-        Vd += 0.5*(
-            A1*(1 + math.cos(dihed_angle)) + A2*(1 - math.cos(2*dihed_angle)) + 
-            A3*(1 + math.cos(3*dihed_angle)) + A4)
-        # Vd[count] = 0.5*(
-        #     A1*(1 + math.cos(dihed_angle)) + A2*(1 - math.cos(2*dihed_angle)) + 
-        #     A3*(1 + math.cos(3*dihed_angle)) + A4)
-        # count += 1
+        
+        if ForceField == 'opls' :
+            for j in range(length) :
+                Vd += 0.5*(
+                    A1[j]*(1 + math.cos(dihed_angle)) + A2[j]*(1 - math.cos(2*dihed_angle)) + 
+                    A3[j]*(1 + math.cos(3*dihed_angle)) + A4[j])
+                # Vd[count] = 0.5*(
+                #     A1*(1 + math.cos(dihed_angle)) + A2*(1 - math.cos(2*dihed_angle)) + 
+                #     A3*(1 + math.cos(3*dihed_angle)) + A4)
+                # count += 1
+        elif ForceField == 'gaff' :
+            for j in range(1) :
+                Vd += 0.5 * A2[2]*(1+math.cos((A4[2]*dihed_angle)-A3[2]))
+                print(dihed_angle, A2[2], A4[2], A3[2])
+    
+
     return Vd
 
 def dihedral_force(molecule, fx, fy, fz):
@@ -485,6 +507,8 @@ def dihedral_force(molecule, fx, fy, fz):
         fy[atom4] += fy4
         fz[atom4] += fz4
 
+#%%
+
 ##############################################################################
 if is_main():
     
@@ -492,7 +516,9 @@ if is_main():
     
     # pdb, psf, out_pdb, out_psf = molecule.get_cmd_line()
     
-    molecule.read_psf('butane.psf')
+    #molecule.read_psf('butane.psf')
+    molecule.read_psf('butane_sem_Hdihedrals.psf')
+    
     molecule.read_pdb('sqm.pdb')
     molecule.read_frcmod('butane.frcmod')
     # Vb = bond_potential(molecule)
