@@ -13,26 +13,23 @@ def dihedral_Ep_rotate(molecule, a, b, theta, ntimes, pdf_name,
                       write_pdb=False, pdb_name=None):
     times = ntimes + 1
     degrees = np.zeros(times, dtype='float16')
-    Va = np.zeros(times, dtype='float32')
-    degrees[0] = 0
-    Va[0] = dihedral_potential(molecule)
+    Vd = np.zeros(times, dtype='float32')
+    degrees[0], Vd[0] = dihedral_potential(molecule)
     init_rotation_axis(molecule, a, b, theta)
     rlist = get_rotation_list(molecule, a, b)
     if not write_pdb:
         for i in range(1, times):
             for atom in rlist:
                 rotate_atom(molecule, atom)
-            degrees[i] = theta*i
-            Va[i] = dihedral_potential(molecule)
+            degrees[i], Vd[i] = dihedral_potential(molecule)
     else:
         molecule.write_pdb(pdb_name, 'w+', 0)
         for i in range(1, times):
             for atom in rlist:
                 rotate_atom(molecule, atom)
-            degrees[i] = theta*i
-            Va[i] = dihedral_potential(molecule)
+            degrees[i], Vd[i] = dihedral_potential(molecule)
             molecule.write_pdb(pdb_name, 'a', i)
-    plt.plot(degrees, Va)
+    plt.scatter(degrees, Vd, marker='.')
     plt.xlabel('Degrees (rad)')
     plt.ylabel(r'Elastic potential (kcal $mol^{-1} \AA^{-2}$)')
     plt.grid()
@@ -40,10 +37,9 @@ def dihedral_Ep_rotate(molecule, a, b, theta, ntimes, pdf_name,
     plt.title(r'{}$^\circ$ x {} rotations'.format(theta*180/math.pi, ntimes), fontsize=10, loc='right')
     plt.savefig(pdf_name)
     plt.show()
-    return Va
+    return Vd
 
 def minimize_pot_energy(molecule, fx, fy, fz):
-    ''' completa com forca resultante de ligacoes, angulos e diedros '''
     for i in range(molecule.num_atoms):
         fx1 = fx[i]
         fy1 = fy[i]
@@ -103,7 +99,6 @@ def bond_force(molecule, fx, fy, fz):
         fx1 = force*ux  # decomposition of the force on the X axis
         fy1 = force*uy  # decomposition of the force on the Y axis
         fz1 = force*uz  # decomposition of the force on the Z axis
-        ''' esta como bx, by, bz; nao seria ux, uy, uz ?? '''
         fx2 = -fx1
         fy2 = -fy1
         fz2 = -fz1
@@ -338,12 +333,21 @@ def dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4):
         molecule, -v23x, v34x, -v23y, v34y, -v23z, v34z)
     # normal vector of the plane determined by vectors v32 and v34 (v32 = -v23)
     
-    M1 = (n1x*n1x + n1y*n1y + n1z*n1z)**0.5 # magnitude of n1
-    M2 = (n2x*n2x + n2y*n2y + n2z*n2z)**0.5 # magnitude of n2
-    cos0 = (n1x*n2x + n1y*n2y + n1z*n2z)/(M1*M2)
-    dihed_angle = math.acos(round(cos0, 6))
+    nx, ny, nz = cross_product_3d(molecule, n1x, n2x, n1y, n2y, n1z, n2z)
+    # normal vector of the plane determined by n1 and n2
+    M = (nx*nx + ny*ny + nz*nz)**0.5    # magnitude of normal vector n
+    det = nx*abs(nx)/M + ny*abs(ny)/M + nz*abs(nz)/M
+    # Let u = abs(n)/M (normalization of vector n). The determinant det(n1, n2, u) 
+    # is proportional to the sine of the angle between vectors n1 and n2. It can be 
+    # expressed as the triple product between n1, n2 and u. Triple product: 
+    # (n1 x n2) * u
+    dot = n1x*n2x + n1y*n2y + n1z*n2z
+    # the dot product between n1 and n2 is proportional to the cosine of the angle
+    # dihed_angle = math.atan2(det, dot)
+    dihed_angle = math.atan2(det, dot) + np.pi
+    
     return length, A1, A2, A3, A4, dihed_angle
-        
+
 def dihedral_force_variables(molecule, atom1, atom2, atom3, atom4):
     x1 = molecule.x[atom1]
     y1 = molecule.y[atom1]
@@ -409,8 +413,8 @@ def dihedral_force_variables(molecule, atom1, atom2, atom3, atom4):
     
     M1 = (n1x*n1x + n1y*n1y + n1z*n1z)**0.5
     M2 = (n2x*n2x + n2y*n2y + n2z*n2z)**0.5
-    cos0 = (n1x*n2x + n1y*n2y + n1z*n2z)/(M1*M2)
-    dihed_angle = math.acos(round(cos0, 6))
+    cos0 = round((n1x*n2x + n1y*n2y + n1z*n2z)/(M1*M2), 6)
+    dihed_angle = math.acos(cos0)
     
     p1x = n1x/M1
     p1y = n1y/M1
@@ -460,31 +464,29 @@ def dihedral_force_variables(molecule, atom1, atom2, atom3, atom4):
 def dihedral_potential(molecule, ForceField = 'gaff'):
     ndihed = molecule.topology.num_dihedrals
     Vd = 0
-    # Vd = np.zeros(ndihed, dtype='float32')
-    # count = 0
-    for i in range(0, ndihed*4, 4):
-        length,A1, A2, A3, A4, dihed_angle = dihedral_pot_variables(molecule, 
-            atom1 = molecule.topology.dihedral_list[i]-1, 
-            atom2 = molecule.topology.dihedral_list[i+1]-1, 
-            atom3 = molecule.topology.dihedral_list[i+2]-1, 
-            atom4 = molecule.topology.dihedral_list[i+3]-1)
-        
-        if ForceField == 'opls' :
-            for j in range(length) :
+    if ForceField == 'opls':
+        for i in range(0, ndihed*4, 4):
+            length, A1, A2, A3, A4, dihed_angle = dihedral_pot_variables(molecule, 
+                atom1 = molecule.topology.dihedral_list[i]-1, 
+                atom2 = molecule.topology.dihedral_list[i+1]-1, 
+                atom3 = molecule.topology.dihedral_list[i+2]-1, 
+                atom4 = molecule.topology.dihedral_list[i+3]-1)
+            for j in range(length):
                 Vd += 0.5*(
                     A1[j]*(1 + math.cos(dihed_angle)) + A2[j]*(1 - math.cos(2*dihed_angle)) + 
                     A3[j]*(1 + math.cos(3*dihed_angle)) + A4[j])
-                # Vd[count] = 0.5*(
-                #     A1*(1 + math.cos(dihed_angle)) + A2*(1 - math.cos(2*dihed_angle)) + 
-                #     A3*(1 + math.cos(3*dihed_angle)) + A4)
-                # count += 1
-        elif ForceField == 'gaff' :
-            for j in range(1) :
-                Vd += 0.5 * A2[2]*(1+math.cos((A4[2]*dihed_angle)-A3[2]))
-                print(dihed_angle, A2[2], A4[2], A3[2])
-    
+        
+    else:
+        # for i in range(0, ndihed*4, 4):
+        length, A1, A2, A3, A4, dihed_angle = dihedral_pot_variables(molecule, 
+            atom1 = molecule.topology.dihedral_list[0]-1, 
+            atom2 = molecule.topology.dihedral_list[1]-1, 
+            atom3 = molecule.topology.dihedral_list[2]-1, 
+            atom4 = molecule.topology.dihedral_list[3]-1)
+        for j in range(length):
+            Vd += A2[j]*(1 + math.cos((A4[j]*dihed_angle) - A3[j]))
 
-    return Vd
+    return dihed_angle, Vd
 
 def dihedral_force(molecule, fx, fy, fz):
     for i in range(0, molecule.topology.num_dihedrals*4, 4):
@@ -517,7 +519,7 @@ if is_main():
     # pdb, psf, out_pdb, out_psf = molecule.get_cmd_line()
     
     #molecule.read_psf('butane.psf')
-    molecule.read_psf('butane_sem_Hdihedrals.psf')
+    molecule.read_psf('butane.psf')
     
     molecule.read_pdb('sqm.pdb')
     molecule.read_frcmod('butane.frcmod')
@@ -531,5 +533,5 @@ if is_main():
     # angle_force(molecule, fx, fy, fz)
     # dihedral_force(molecule, fx, fy, fz)
     Vd = dihedral_Ep_rotate(molecule, a=2, b=3, theta=np.pi/180, ntimes=360, 
-                            pdf_name='Ep_sqm (2).pdf', write_pdb=False, pdb_name='sqm_rotated.pdb')
+                            pdf_name='Ep_sqm.pdf', write_pdb=False, pdb_name='sqm_rotated.pdb')
     
