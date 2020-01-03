@@ -56,6 +56,10 @@ class Molecule:
             # where index 0 refers to the angle "spring" constant and index 1 refers 
             # to the equilibrium angle converted to radians.
             self.dihedral_types = {}
+            # e.g. self.dihedral_types['c3-c3-c3-c3'][0], 
+            # self.dihedral_types['c3-c3-c3-c3'][1] (dihedral angle "spring" constant), 
+            # self.dihedral_types['c3-c3-c3-c3'][2] (dihedral angle converted to radians) 
+            # or self.dihedral_types['c3-c3-c3-c3'][3] (multiplicity).
 
     # def get_cmd_line():
     #     parser = argparse.ArgumentParser(description = 'PDB and PSF reader, chain rotator.')
