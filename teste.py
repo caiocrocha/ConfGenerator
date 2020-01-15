@@ -12,14 +12,14 @@ A3=[0,180,180]
 A4=[-3,-2,1]
 
 data=[]
-for ang in np.linspace(0,360,360) :
+for ang in np.linspace(0,360,361) :
     Vd=0
     for j in range(len(A2)) : 
-        Vd += 0.5 * A2[j] * (1 + math.cos( A4[j]* ang2grad(ang) - ang2grad(A3[j] ))) 
+        Vd += A2[j] * (1 + math.cos( A4[j]* ang2grad(ang) - ang2grad(A3[j] ))) 
     
     data.append([ang,Vd])
     
 data=pd.DataFrame(data)
 data.columns=['ang','Vd']
 data.plot(x='ang',y='Vd')
-data    
+data.to_csv('curva.dat',index=False, float_format='%.3f')

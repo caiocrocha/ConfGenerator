@@ -15,23 +15,27 @@ def dihedral_Ep_rotate(molecule, a, b, theta, ntimes, pdf_name,
                       write_pdb=False, pdb_name=None):
     times = ntimes + 1
     Vd = np.zeros(times, dtype='float32')
-    Vd[0], dihed_angle = _dihedral_potential_(molecule)
-    plt.scatter(dihed_angle, Vd[0], marker='.', color='royalblue')
+    dihed_angle = np.zeros(times, dtype='float32')
+    Vd[0], dihed_angle[0] = _dihedral_potential_(molecule)
+    dihed_angle[0] = np.rad2deg(dihed_angle[0])
+    plt.scatter(dihed_angle[0], Vd[0], marker='.', color='royalblue')
     init_rotation_axis(molecule, a, b, theta)
     rlist = get_rotation_list(molecule, a, b)
     if not write_pdb:
         for i in range(1, times):
             for atom in rlist:
                 rotate_atom(molecule, atom)
-            Vd[i], dihed_angle = _dihedral_potential_(molecule)
-            plt.scatter(dihed_angle, Vd[i], marker='.', color='royalblue')
+            Vd[i], dihed_angle[i] = _dihedral_potential_(molecule)
+            dihed_angle[i] = np.rad2deg(dihed_angle[i])
+            plt.scatter(dihed_angle[i], Vd[i], marker='.', color='royalblue')
     else:
         molecule.write_pdb(pdb_name, 'w+', 0)
         for i in range(1, times):
             for atom in rlist:
                 rotate_atom(molecule, atom)
-            Vd[i], dihed_angle = _dihedral_potential_(molecule)
-            plt.scatter(dihed_angle, Vd[i], marker='.', color='royalblue')
+            Vd[i], dihed_angle[i] = _dihedral_potential_(molecule)
+            dihed_angle[i] = np.rad2deg(dihed_angle[i])
+            plt.scatter(dihed_angle[i], Vd[i], marker='.', color='royalblue')
             molecule.write_pdb(pdb_name, 'a', i)
     plt.xlabel('Degrees (rad)')
     plt.ylabel(r'Elastic potential (kcal $mol^{-1} \AA^{-2}$)')
@@ -40,7 +44,7 @@ def dihedral_Ep_rotate(molecule, a, b, theta, ntimes, pdf_name,
     plt.title(r'{}$^\circ$ x {} rotations'.format(theta*180/math.pi, ntimes), fontsize=10, loc='right')
     plt.savefig(pdf_name)
     plt.show()
-    return Vd
+    return dihed_angle, Vd
 
 def minimize_pot_energy(molecule, fx, fy, fz):
     for i in range(molecule.num_atoms):
@@ -452,10 +456,11 @@ if is_main():
     molecule = Molecule()
     
     # pdb, psf, out_pdb, out_psf = molecule.get_cmd_line()
-    
+ 
     molecule.read_psf('butane.psf')
     molecule.read_pdb('sqm.pdb')
     molecule.read_frcmod('butane.frcmod')
+    '''
     Vb = bond_potential(molecule)
     Va = angle_potential(molecule)
     Vd = dihedral_potential(molecule)
@@ -476,6 +481,16 @@ if is_main():
     bond_force(molecule, fx1, fy1, fz1)
     angle_force(molecule, fx1, fy1, fz1)
     dihedral_force(molecule, fx1, fy1, fz1)
-    # Vd_list = dihedral_Ep_rotate(molecule, a=2, b=3, theta=np.pi/180, ntimes=360, 
-    #                         pdf_name='Ep_sqm (2).pdf', write_pdb=False, pdb_name='sqm_rotated.pdb')
-    
+    '''
+    angle_list, Vd_list = dihedral_Ep_rotate(molecule, a=2, b=3, theta=np.pi/180, ntimes=360, 
+        pdf_name='Ep_sqm (2).pdf', write_pdb=True, pdb_name='sqm_rotated.pdb')
+    '''
+    with open ('comparar.dat', 'w+') as arq:
+        for i in range(0, len(Vd_list), 10):
+            arq.write('{:.3f},{:.6f}\n'.format(angle_list[i], Vd_list[i]))
+    '''
+    import pandas as pd
+    output=pd.DataFrame(Vd_list, angle_list)
+    output.to_csv('comparar.dat')
+
+
