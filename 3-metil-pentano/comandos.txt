@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Prepara o .mol2 
+antechamber -i 3-metil-pentano.pdb -o 3-metil-pentano.mol2 -fi pdb -fo mol2 -c bcc -pf y -rn MOL
+
+# Gera os parametros
+parmchk2 -i 3-metil-pentano.mol2 -f mol2 -o 3-metil-pentano.frcmod -a Y -w Y
+
+# Gera a topologia no formato do AMBER
+tleap -f tleap.in
+
+# Gera o .PSF
+amber.python prmtop2psf.py

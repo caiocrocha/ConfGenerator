@@ -1,0 +1,7 @@
+source leaprc.gaff2
+loadAmberParams 3-metil-pentano.frcmod
+mol = loadmol2 3-metil-pentano.mol2
+saveamberparm mol 3-metil-pentano.prmtop 3-metil-pentano.rst7
+quit
+
+
