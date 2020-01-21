@@ -575,7 +575,6 @@ if is_main():
     bond_force(molecule, fx1, fy1, fz1)
     angle_force(molecule, fx1, fy1, fz1)
     dihedral_force(molecule, fx1, fy1, fz1)
-    var = 0
     '''
     angle_list, Vd_list = dihedral_Ep_rotate(molecule, a=2, b=3, theta=np.pi/18, ntimes=36,
         pdf_name='./Graphs/ignore.pdf', write_pdb=False, pdb_name='./butane/sqm/sqm_rotated1.pdb')
