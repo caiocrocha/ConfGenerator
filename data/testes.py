@@ -83,5 +83,5 @@
 #   c3          1.9080  0.1094
 #   hc          1.4870  0.0157
 
-import math
-a = math.atan2(0, 1)
+lis = [0, 1, 4]
+print(lis[0:2])

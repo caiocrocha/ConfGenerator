@@ -2,7 +2,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from class_molecule import Molecule
-from rotate import get_rotation_list, init_rotation_axis, set_rotation_angle, rotate_atom
+from rotate import get_rotation_list, init_rotation_axis, rotate_atom
 from cross_product_3d import cross_product_3d
 
 def is_main():
@@ -11,48 +11,13 @@ def is_main():
 
 #%%
 
-def recursive_heuristic_conf(molecule, rlist, theta, ntimes, a, b, vez, arquivo):
-    init_rotation_axis(molecule, a, b, theta)
-    lowest = dihedral_potential(molecule)
-    comeback = 0
-    for i in range(ntimes):
-        for atom in rlist:
-            rotate_atom(molecule, atom)
-        molecule.write_pdb(arquivo, 'a', vez)
-        vez += 1
-        Vd = dihedral_potential(molecule)
-        if Vd < lowest:
-            lowest = Vd
-            comeback = i
-    set_rotation_angle(comeback * theta)
-    for atom in rlist:
-        rotate_atom(molecule, atom)
-    molecule.write_pdb(arquivo, 'a', vez)
-    vez += 1
-    k = int(b * (b - 1) / 2)
-    for i in range(b-1, -1, -1):
-        if (molecule.topology.bond_matrix[k + i] and i != a and molecule.topology.type[i-1] != 'hc'):
-            rlist1 = get_rotation_list(molecule, b, i)
-            recursive_heuristic_conf(molecule, rlist1, theta, ntimes, b, i, vez, arquivo)
-    for i in range(b+1, molecule.num_atoms):
-        if(molecule.topology.bond_matrix[int(i*(i-1)/2 + b)] and i != a and molecule.topology.type[i-1] != 'hc'):
-            rlist1 = get_rotation_list(molecule, b, i)
-            recursive_heuristic_conf(molecule, rlist1, theta, ntimes, b, i, vez, arquivo)
-
-def heuristic_conformation(molecule, theta, arquivo):
-    ntimes = int(2*np.pi/theta)
-    a = molecule.topology.bond_list[0]
-    b = molecule.topology.bond_list[1]
-    rlist = get_rotation_list(molecule, a, b)
-    molecule.write_pdb('./butane/sqm/sqm_heuristic.pdb', 'w+', 0)
-    recursive_heuristic_conf(molecule, rlist, theta, ntimes, a, b, 1, arquivo)
-
 def dihedral_Ep_rotate(molecule, a, b, theta, ntimes, pdf_name, 
                       write_pdb=False, pdb_name=None):
     times = ntimes + 1
     Vd = np.zeros(times, dtype='float32')
     dihed_angle = np.zeros(times, dtype='float32')
-    Vd[0], dihed_angle[0] = _dihedral_potential(molecule)
+    Vd[0], dihed_angle[0] = _dihedral_potential_(molecule)
+    dihed_angle[0] = np.rad2deg(dihed_angle[0])
     plt.scatter(dihed_angle[0], Vd[0], marker='.', color='royalblue')
     init_rotation_axis(molecule, a, b, theta)
     rlist = get_rotation_list(molecule, a, b)
@@ -60,14 +25,16 @@ def dihedral_Ep_rotate(molecule, a, b, theta, ntimes, pdf_name,
         for i in range(1, times):
             for atom in rlist:
                 rotate_atom(molecule, atom)
-            Vd[i], dihed_angle[i] = _dihedral_potential(molecule)
+            Vd[i], dihed_angle[i] = _dihedral_potential_(molecule)
+            dihed_angle[i] = np.rad2deg(dihed_angle[i])
             plt.scatter(dihed_angle[i], Vd[i], marker='.', color='royalblue')
     else:
         molecule.write_pdb(pdb_name, 'w+', 0)
         for i in range(1, times):
             for atom in rlist:
                 rotate_atom(molecule, atom)
-            Vd[i], dihed_angle[i] = _dihedral_potential(molecule)
+            Vd[i], dihed_angle[i] = _dihedral_potential_(molecule)
+            dihed_angle[i] = np.rad2deg(dihed_angle[i])
             plt.scatter(dihed_angle[i], Vd[i], marker='.', color='royalblue')
             molecule.write_pdb(pdb_name, 'a', i)
     plt.xlabel('Degrees (rad)')
@@ -115,14 +82,9 @@ def bond_pot_variables(molecule, atom1, atom2):
 
 def bond_force_variables(molecule, atom1, atom2):
     bx, by, bz, b, b0, Kb, d = bond_pot_variables(molecule, atom1, atom2)
-    if b != 0:
-        ux = bx/b
-        uy = by/b
-        uz = bz/b
-    else:
-        ux = 0
-        uy = 0
-        uz = 0
+    ux = bx/b
+    uy = by/b
+    uz = bz/b
     return bx, by, bz, b, b0, Kb, d, ux, uy, uz
 
 def bond_potential(molecule):
@@ -158,7 +120,7 @@ def bond_force(molecule, fx, fy, fz):
         fy[atom2] += fy2
         fz[atom2] += fz2
 
-def _angle_pot_variables(molecule, atom1, atom2, atom3):
+def angle_pot_variables(molecule, atom1, atom2, atom3):
     # global x1, y1, z1, x2, y2, z2, x3, y3, z3
     # global v21x, v21y, v21z, v23x, v23y, v23z, n1, n2
     
@@ -194,20 +156,14 @@ def _angle_pot_variables(molecule, atom1, atom2, atom3):
         try:
             Ka = molecule.topology.angle_types[atype][0]
             a0 = molecule.topology.angle_types[atype][1]
-        except:
-            raise AttributeError('Could not find corresponding angle type')
-    return a0, Ka, v21x, v21y, v21z, v23x, v23y, v23z, norm1, norm2
-
-def angle_pot_variables(molecule, atom1, atom2, atom3):
-    a0, Ka, v21x, v21y, v21z, v23x, v23y, v23z, norm1, norm2 = _angle_pot_variables(molecule, atom1, atom2, atom3)
-    if norm1 != 0 and norm2 != 0:
-        angle = math.acos((v21x*v23x + v21y*v23y + v21z*v23z)/(norm1*norm2))
-    else:
-        angle = 0
-    return angle-a0, Ka
+        except: pass
+    
+    angle = math.acos((v21x*v23x + v21y*v23y + v21z*v23z)/(norm1*norm2))
+    delta_angle = angle - a0
+    return delta_angle, Ka, v21x, v21y, v21z, v23x, v23y, v23z, norm1, norm2
 
 def angle_force_variables(molecule, atom1, atom2, atom3):
-    a0, Ka, v21x, v23x, v21y, v23y, v21z, v23z, norm1, norm2 = _angle_pot_variables(
+    delta_angle, Ka, v21x, v23x, v21y, v23y, v21z, v23z, norm1, norm2 = angle_pot_variables(
         molecule, atom1, atom2, atom3)
     nx, ny, nz = cross_product_3d(
         molecule, v21x, v23x, v21y, v23y, v21z, v23z)
@@ -221,23 +177,13 @@ def angle_force_variables(molecule, atom1, atom2, atom3):
     M1 = (vR1x*vR1x + vR1y*vR1y + vR1z*vR1z)**0.5
     M2 = (vR2x*vR2x + vR2y*vR2y + vR2z*vR2z)**0.5
     # the following are the normalization of vR1 and vR2:
-    if M1 != 0:
-        p1x = vR1x/M1
-        p1y = vR1y/M1
-        p1z = vR1z/M1
-    else:
-        p1x = 0
-        p1y = 0
-        p1z = 0
-    if M2 != 0:
-        p2x = vR2x/M2
-        p2y = vR2y/M2
-        p2z = vR2z/M2
-    else:
-        p2x = 0
-        p2y = 0
-        p2z = 0
-    return a0, Ka, v21x, v23x, v21y, v23y, v21z, v23z, norm1, norm2, p1x, p1y, p1z, p2x, p2y, p2z
+    p1x = vR1x/M1
+    p1y = vR1y/M1
+    p1z = vR1z/M1
+    p2x = vR2x/M2
+    p2y = vR2y/M2
+    p2z = vR2z/M2
+    return delta_angle, Ka, norm1, norm2, p1x, p1y, p1z, p2x, p2y, p2z
         
 def angle_potential(molecule):
     nangles = molecule.topology.num_angles
@@ -245,7 +191,7 @@ def angle_potential(molecule):
     # Va = np.zeros(nangles, dtype='float32')
     # count = 0
     for i in range(0, nangles*3, 3):
-        delta_angle, Ka = angle_pot_variables(
+        delta_angle, Ka, v21x, v21y, v21z, v23x, v23y, v23z, norm1, norm2 = angle_pot_variables(
             molecule, 
             atom1 = molecule.topology.angle_list[i]-1, 
             atom2 = molecule.topology.angle_list[i+1]-1, 
@@ -260,29 +206,13 @@ def angle_force(molecule, fx, fy, fz):
         atom1 = molecule.topology.angle_list[i]-1
         atom2 = molecule.topology.angle_list[i+1]-1
         atom3 = molecule.topology.angle_list[i+2]-1
-        a0, Ka, v21x, v23x, v21y, v23y, v21z, v23z, norm1, norm2, p1x, p1y, p1z, p2x, p2y, p2z = angle_force_variables(
+        delta_angle, Ka, norm1, norm2, p1x, p1y, p1z, p2x, p2y, p2z = angle_force_variables(
             molecule, atom1, atom2, atom3)
-        if norm1 != 0 and norm2 != 0:
-            dot = (v21x * v23x + v21y * v23y + v21z * v23z) / (norm1 * norm2)
-            if dot > 1:
-                dot = 1
-            elif dot < -1:
-                dot = -1
-            angle = math.acos(dot)
-            force = -2*Ka*(angle-a0)   # first derivative of the angle potential Va
-        else:
-            angle = 0
-            force = -2 * Ka * (angle - a0)
-        if norm1 != 0:
-            u1 = force / norm1
-            # force multiplied by the partial derivative of Va according to position (x1, y1, z1)
-        else:
-            u1 = 0
-        if norm2 != 0:
-            u3 = force / norm2
-            # force multiplied by the partial derivative of Va according to position (x3, y3, z3)
-        else:
-            u3 = 0
+        force = -2*Ka*delta_angle    # first derivative of the angle potential Va
+        u1 = force/norm1
+        # force multiplied by the partial derivative of Va according to position (x1, y1, z1)
+        u3 = force/norm2
+        # force multiplied by the partial derivative of Va according to position (x3, y3, z3)
         fx1 = p1x*u1
         fy1 = p1y*u1
         fz1 = p1z*u1
@@ -296,6 +226,7 @@ def angle_force(molecule, fx, fy, fz):
         fy[atom3] += fy2
         fz[atom3] += fz2
         fx[atom2] += -fx1 - fx2
+        ''' fx1 ou fx[atom1] ?? '''
         fy[atom2] += -fy1 - fy2
         fz[atom2] += -fz1 - fz2
         
@@ -307,7 +238,7 @@ def get_dihed_type(molecule, atom1, atom2, atom3, atom4):
             )  # dihedral type (e.g. 'c3-c3-c3-c3')
     return dtype
         
-def _dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4, dtype):
+def dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4, dtype):
     x1 = molecule.x[atom1]
     y1 = molecule.y[atom1]
     z1 = molecule.z[atom1]
@@ -363,8 +294,7 @@ def _dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4, dtype):
                 A2[i] = molecule.topology.dihedral_types[dtype][i][1]
                 A3[i] = molecule.topology.dihedral_types[dtype][i][2]
                 A4[i] = molecule.topology.dihedral_types[dtype][i][3]
-        except:
-            raise AttributeError('Could not find corresponding dihedral type')
+        except: pass
     
     n1x, n1y, n1z = cross_product_3d(
         molecule, v21x, v23x, v21y, v23y, v21z, v23z)
@@ -376,75 +306,57 @@ def _dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4, dtype):
     nx, ny, nz = cross_product_3d(molecule, n1x, n2x, n1y, n2y, n1z, n2z)
     # normal vector of the plane determined by n1 and n2
     M = (nx*nx + ny*ny + nz*nz)**0.5    # magnitude of normal vector n
-    if M != 0:
-        det = (nx*abs(nx) + ny*abs(ny) + nz*abs(nz))/M
-        # Let u = abs(n)/M (normalization of vector n). The determinant det(n1, n2, u)
-        # is proportional to the sine of the angle between vectors n1 and n2. It can be
-        # expressed as the triple product between n1, n2 and u. Triple product:
-        # (n1 x n2) * u
-        dot = n1x * n2x + n1y * n2y + n1z * n2z
-        # the dot product between n1 and n2 is proportional to the cosine of the angle
-        # dihed_angle = math.atan2(det, dot)
-        dihed_angle = math.atan2(det, dot) + np.pi
-    else:
-        dihed_angle = 0
+    det = nx*abs(nx)/M + ny*abs(ny)/M + nz*abs(nz)/M
+    # Let u = abs(n)/M (normalization of vector n). The determinant det(n1, n2, u) 
+    # is proportional to the sine of the angle between vectors n1 and n2. It can be 
+    # expressed as the triple product between n1, n2 and u. Triple product: 
+    # (n1 x n2) * u
+    dot = n1x*n2x + n1y*n2y + n1z*n2z
+    # the dot product between n1 and n2 is proportional to the cosine of the angle
+    # dihed_angle = math.atan2(det, dot)
+    dihed_angle = math.atan2(det, dot) + np.pi
     
-    return (length, A1, A2, A3, A4, dihed_angle, x2, y2, z2, x3, y3, z3,
-        v21x, v21y, v21z, v23x, v23y, v23z, v34x, v34y, v34z, v32x, v32y, v32z,
+    return (length, A1, A2, A3, A4, dihed_angle, x2, y2, z2, x3, y3, z3, 
+        v21x, v21y, v21z, v23x, v23y, v23z, v34x, v34y, v34z, v32x, v32y, v32z, 
         n1x, n1y, n1z, n2x, n2y, n2z)
-
-def dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4, dtype):
-    length, A1, A2, A3, A4, dihed_angle = _dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4, dtype)[0:6]
-    return length, A1, A2, A3, A4, dihed_angle
 
 def dihedral_force_variables(molecule, atom1, atom2, atom3, atom4, dtype):
     (length, A1, A2, A3, A4, dihed_angle, x2, y2, z2, x3, y3, z3, 
         v21x, v21y, v21z, v23x, v23y, v23z, v34x, v34y, v34z, v32x, v32y, v32z, 
-        n1x, n1y, n1z, n2x, n2y, n2z) = _dihedral_pot_variables(
+        n1x, n1y, n1z, n2x, n2y, n2z) = dihedral_pot_variables(
             molecule, atom1, atom2, atom3, atom4, dtype)
     norm1 = (v21x*v21x + v21y*v21y + v21z*v21z)**0.5 # norm of vector v21 (or v12)
     norm2 = (v23x*v23x + v23y*v23y + v23z*v23z)**0.5 # norm of vector v23 (or v32)
     norm3 = (v34x*v34x + v34y*v34y + v34z*v34z)**0.5 # norm of vector v34 (or v43)
-
+    
+    theta1 = math.acos((v21x*v23x + v21y*v23y + v21z*v23z)/(norm1*norm2))
+    theta2 = math.acos((v32x*v34x + v32y*v34y + v32z*v34z)/(norm2*norm3))
+    M1 = (n1x*n1x + n1y*n1y + n1z*n1z)**0.5
+    M2 = (n2x*n2x + n2y*n2y + n2z*n2z)**0.5
+    
+    p1x = n1x/M1
+    p1y = n1y/M1
+    p1z = n1z/M1
+    p2x = n2x/M2
+    p2y = n2y/M2
+    p2z = n2z/M2
+    # p1 and p2 are the normalization of n1 and n2
+    
     force = 0
     for i in range(length):
-        force += A2[i] * math.sin((A4[i] * dihed_angle) - A3[i]) * A4[i]
+        force += A2[i]*math.sin((A4[i]*dihed_angle) - A3[i])*A4[i]
     # first derivative of the dihedral potential Vd
-
-    if norm1 == 0 or norm2 == 0:
-        f1x = 0
-        f1y = 0
-        f1z = 0
-    else:
-        theta1 = math.acos((v21x * v23x + v21y * v23y + v21z * v23z) / (norm1 * norm2))
-        M1 = (n1x * n1x + n1y * n1y + n1z * n1z) ** 0.5
-        p1x = n1x / M1
-        p1y = n1y / M1
-        p1z = n1z / M1
-        # p1 is the normalization of n1
-        u1 = force / (norm1 * math.sin(theta1))
-        # force multiplied by the partial derivative of theta1 according to position (x1, y1, z1)
-        f1x = p1x * u1
-        f1y = p1y * u1
-        f1z = p1z * u1
-
-    if norm2 == 0 or norm3 == 0:
-        f4x = 0
-        f4y = 0
-        f4z = 0
-    else:
-        theta2 = math.acos((v32x*v34x + v32y*v34y + v32z*v34z)/(norm2*norm3))
-        M2 = (n2x * n2x + n2y * n2y + n2z * n2z)**0.5
-        p2x = n2x / M2
-        p2y = n2y / M2
-        p2z = n2z / M2
-        # p2 is the normalization of n2
-        u4 = force/(norm3*math.sin(theta2))
-        # force multiplied by the partial derivative of theta2 according to position (x4, y4, z4)
-        f4x = p2x*u4
-        f4y = p2y*u4
-        f4z = p2z*u4
-
+    u1 = force/(norm1*math.sin(theta1))
+    # force multiplied by the partial derivative of theta1 according to position (x1, y1, z1)
+    u4 = force/(norm3*math.sin(theta2))
+    # force multiplied by the partial derivative of theta2 according to position (x4, y4, z4)
+    f1x = p1x*u1
+    f1y = p1y*u1
+    f1z = p1z*u1
+    f4x = p2x*u4
+    f4y = p2y*u4
+    f4z = p2z*u4
+    
     ox = (x2 + x3)/2
     oy = (y2 + y3)/2
     oz = (z2 + z3)/2
@@ -453,29 +365,23 @@ def dihedral_force_variables(molecule, atom1, atom2, atom3, atom4, dtype):
     vo3y = y3 - oy
     vo3z = z3 - oz
     # vector parting from o to (x3, y3, z3)
-
-    norm_vo3 = vo3x*vo3x + vo3y*vo3y + vo3z*vo3z
-    if norm_vo3 == 0:
-        f3x = 0
-        f3y = 0
-        f3z = 0
-    else:
-        const = -1/norm_vo3   # inverse square of the norm of vector vo3
-        n_vo3_f4x, n_vo3_f4y, n_vo3_f4z = cross_product_3d(molecule, vo3x, f4x, vo3y, f4y, vo3z, f4z)
-        n_v34_f4x, n_v34_f4y, n_v34_f4z = cross_product_3d(molecule, v34x, f4x, v34y, f4y, v34z, f4z)
-        n_v21_f4x, n_v21_f4y, n_v21_f4z = cross_product_3d(molecule, v21x, f4x, v21y, f4y, v21z, f4z)
-        t3x = const*(n_vo3_f4x + 0.5*n_v34_f4x + 0.5*n_v21_f4x)
-        t3y = const*(n_vo3_f4y - 0.5*n_v34_f4y - 0.5*n_v21_f4y)
-        t3z = const*(n_vo3_f4z - 0.5*n_v34_f4z - 0.5*n_v21_f4z)
-        # t3 is the cross product (vo3 by f3)
-        f3x, f3y, f3z = cross_product_3d(molecule, t3x, vo3x, t3y, vo3y, t3z, vo3z)
-        
+    
+    const = -1/(vo3x*vo3x + vo3y*vo3y + vo3z*vo3z)   # inverse square of the norm of vector vo3
+    n_vo3_f4x, n_vo3_f4y, n_vo3_f4z = cross_product_3d(molecule, vo3x, f4x, vo3y, f4y, vo3z, f4z)
+    n_v34_f4x, n_v34_f4y, n_v34_f4z = cross_product_3d(molecule, v34x, f4x, v34y, f4y, v34z, f4z)
+    n_v21_f4x, n_v21_f4y, n_v21_f4z = cross_product_3d(molecule, v21x, f4x, v21y, f4y, v21z, f4z)
+    t3x = const*(n_vo3_f4x + 0.5*n_v34_f4x + 0.5*n_v21_f4x)
+    t3y = const*(n_vo3_f4y - 0.5*n_v34_f4y - 0.5*n_v21_f4y)
+    t3z = const*(n_vo3_f4z - 0.5*n_v34_f4z - 0.5*n_v21_f4z)
+    # t3 is the cross product (vo3 by f3)
+    
+    f3x, f3y, f3z = cross_product_3d(molecule, t3x, vo3x, t3y, vo3y, t3z, vo3z)
     f2x = -f1x - f3x - f4x
     f2y = -f1y - f3y - f4y
     f2z = -f1z - f3z - f4z
     return f1x, f1y, f1z, f2x, f2y, f2z, f3x, f3y, f3z, f4x, f4y, f4z
 
-def _dihedral_potential(molecule, ForceField='gaff'):
+def _dihedral_potential_(molecule, ForceField='gaff'):
     ndihed = molecule.topology.num_dihedrals
     Vd = 0
     if ForceField == 'opls':
@@ -487,7 +393,9 @@ def _dihedral_potential(molecule, ForceField='gaff'):
             dtype = get_dihed_type(molecule, atom1, atom2, atom3, atom4)
             if 'hc' in dtype:
                 continue
-            length, A1, A2, A3, A4, dihed_angle = dihedral_pot_variables(
+            (length, A1, A2, A3, A4, dihed_angle, x2, y2, z2, x3, y3, z3, 
+                v21x, v21y, v21z, v23x, v23y, v23z, v34x, v34y, v34z, 
+                v32x, v32y, v32z) = dihedral_pot_variables(
                     molecule, atom1, atom2, atom3, atom4, dtype)
             for j in range(length):
                 Vd += 0.5*(
@@ -503,15 +411,17 @@ def _dihedral_potential(molecule, ForceField='gaff'):
             dtype = get_dihed_type(molecule, atom1, atom2, atom3, atom4)
             if 'hc' in dtype:
                 continue
-            length, A1, A2, A3, A4, dihed_angle = dihedral_pot_variables(
+            (length, A1, A2, A3, A4, dihed_angle, x2, y2, z2, x3, y3, z3, 
+                v21x, v21y, v21z, v23x, v23y, v23z, v34x, v34y, v34z, 
+                v32x, v32y, v32z, n1x, n1y, n1z, n2x, n2y, n2z) = dihedral_pot_variables(
                     molecule, atom1, atom2, atom3, atom4, dtype)
             for j in range(length):
                 Vd += A2[j]*(1 + math.cos((A4[j]*dihed_angle) - A3[j]))
 
-    return Vd, dihed_angle*180/np.pi
+    return Vd, dihed_angle
 
 def dihedral_potential(molecule, ForceField = 'gaff'):
-    Vd = _dihedral_potential(molecule, ForceField)[0]
+    Vd = _dihedral_potential_(molecule, ForceField)[0]
     return Vd
 
 def dihedral_force(molecule, fx, fy, fz):
@@ -547,11 +457,9 @@ if is_main():
 
     # pdb, psf, out_pdb, out_psf = molecule.get_cmd_line()
 
-    molecule.read_psf('./3-metil-pentano/3-metil-pentano.psf')
-    molecule.read_pdb('./3-metil-pentano/3-metil-pentano.pdb')
-    # molecule.read_mol2('./3-metil-pentano/3-metil-pentano.mol2')
-    # molecule.write_mol2('3-metil-pentano1.mol2')
-    molecule.read_frcmod('./3-metil-pentano/3-metil-pentano.frcmod')
+    molecule.read_psf('butane.psf')
+    molecule.read_pdb('sqm.pdb')
+    molecule.read_frcmod('butane.frcmod')
 
     Vb = bond_potential(molecule)
     Va = angle_potential(molecule)
@@ -562,10 +470,9 @@ if is_main():
     bond_force(molecule, fx, fy, fz)
     angle_force(molecule, fx, fy, fz)
     dihedral_force(molecule, fx, fy, fz)
-
-    # minimize_pot_energy(molecule, fx, fy, fz)
-    heuristic_conformation(molecule, theta=np.pi, arquivo='./3-metil-pentano/3-metil-pentano_heuristic.pdb')
-
+    '''
+    minimize_pot_energy(molecule, fx, fy, fz)
+    molecule.write_pdb('sqm_opt.pdb', 'w+', 0)
     Vb1 = bond_potential(molecule)
     Va1 = angle_potential(molecule)
     Vd1 = dihedral_potential(molecule)
@@ -575,10 +482,9 @@ if is_main():
     bond_force(molecule, fx1, fy1, fz1)
     angle_force(molecule, fx1, fy1, fz1)
     dihedral_force(molecule, fx1, fy1, fz1)
-    var = 0
-    '''
-    angle_list, Vd_list = dihedral_Ep_rotate(molecule, a=2, b=3, theta=np.pi/18, ntimes=36,
-        pdf_name='./Graphs/ignore.pdf', write_pdb=False, pdb_name='./butane/sqm/sqm_rotated1.pdb')
+    
+    angle_list, Vd_list = dihedral_Ep_rotate(molecule, a=2, b=3, theta=np.pi/180, ntimes=360, 
+        pdf_name='Ep_sqm (2).pdf', write_pdb=True, pdb_name='sqm_rotated.pdb')
     
     with open ('comparar.dat', 'w+') as arq:
         for i in range(0, len(Vd_list), 10):
@@ -588,3 +494,6 @@ if is_main():
     output=pd.DataFrame(Vd_list, angle_list)
     output.to_csv('comparar.dat')
     '''
+    print(Vd)
+
+

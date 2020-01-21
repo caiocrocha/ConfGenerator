@@ -4,12 +4,18 @@ from class_molecule import Molecule
 def is_main():
     return __name__ == '__main__'
 
+def set_rotation_angle(theta):
+    global cos0, sin0, t
+    cos0 = math.cos(theta)  # cosine of the angle of rotation
+    sin0 = math.sin(theta)  # sine of the angle of rotation
+    t = 1 - cos0
+
 def init_rotation_axis(molecule, a, b, theta):
     # For the construction of the rotation matrix around the axis defined by the bond that
     # connects atoms a and b (vector ab, a to b), there needs to be determined ab's unit vector, 
     # which is mathematicaly defined by its original components divided by the square root
     # of its magnitude.
-    global Ax, Ay, Az, ux, uy, uz, cos0, sin0, t
+    global Ax, Ay, Az, ux, uy, uz
     Ax = molecule.x[a-1]
     Ay = molecule.y[a-1]
     Az = molecule.z[a-1]
@@ -21,12 +27,15 @@ def init_rotation_axis(molecule, a, b, theta):
     ABz = Bz - Az
     M = (ABx*ABx + ABy*ABy + ABz*ABz)**0.5
     # M is the magnitude of the unit vector u
-    ux = (Bx - Ax)/M # x component of u
-    uy = (By - Ay)/M # y component of u
-    uz = (Bz - Az)/M # z component of u
-    cos0 = math.cos(theta) # cosine of the angle of rotation
-    sin0 = math.sin(theta) # sine of the angle of rotation
-    t = 1 - cos0
+    if M != 0:
+        ux = ABx/M # x component of u
+        uy = ABy/M # y component of u
+        uz = ABz/M # z component of u
+    else:
+        ux = 0
+        uy = 0
+        uz = 0
+    set_rotation_angle(theta)
 
 def rotate_atom(molecule, i):
     x1 = molecule.x[i] - Ax
