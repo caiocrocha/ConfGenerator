@@ -83,5 +83,10 @@
 #   c3          1.9080  0.1094
 #   hc          1.4870  0.0157
 
-lis = [0, 1, 4]
-print(lis[0:2])
+with open ('comparar.dat', 'w+') as arq:
+	for i in range(0, len(Vd_list), 10):
+		arq.write('{:.3f},{:.6f}\n'.format(angle_list[i], Vd_list[i]))
+    
+import pandas as pd
+output=pd.DataFrame(Vd_list, angle_list)
+output.to_csv('comparar.dat')

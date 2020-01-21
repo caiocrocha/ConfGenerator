@@ -577,13 +577,5 @@ if is_main():
     dihedral_force(molecule, fx1, fy1, fz1)
     '''
     angle_list, Vd_list = dihedral_Ep_rotate(molecule, a=2, b=3, theta=np.pi/18, ntimes=36,
-        pdf_name='./Graphs/ignore.pdf', write_pdb=False, pdb_name='./butane/sqm/sqm_rotated1.pdb')
-    
-    with open ('comparar.dat', 'w+') as arq:
-        for i in range(0, len(Vd_list), 10):
-            arq.write('{:.3f},{:.6f}\n'.format(angle_list[i], Vd_list[i]))
-    
-    import pandas as pd
-    output=pd.DataFrame(Vd_list, angle_list)
-    output.to_csv('comparar.dat')
+        pdf_name='./Graphs/Ep_3-metil-pentano.pdf', write_pdb=False, pdb_name='./3-metil-pentano/3-metil-pentano_rotated1.pdb')
     '''
