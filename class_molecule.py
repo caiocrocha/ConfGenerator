@@ -8,7 +8,7 @@ def is_main():
 
 class Molecule:
     def __init__(self):
-        self.topology = self.Topology()
+        self.topology  = self.Topology()
         self.id        = [] # 'ATOM' or 'HETATM'
         self.atom      = [] # atom name
         self.alt_loc   = [] # alternate location indicator
@@ -24,25 +24,32 @@ class Molecule:
         self.element   = [] # element symbol
         self.charge    = []
         self.num_atoms = 0  # number of atoms
+        self.molecule_type = ''
+        self.charge_type = ''
         
     class Topology:
         def __init__(self):
-            self.segid       = [] # segment name
-            self.resid       = [] # residue id
-            self.resname     = [] # residue name
-            self.name        = [] # atom name
-            self.type        = [] # atom type
-            self.charge      = [] # charge
-            self.mass        = [] # mass
-            self.num_bonds   = 0  # number of chemical bonds
-            self.bond_list   = []
-            self.bond_matrix = None
+            self.segid         = [] # segment name
+            self.resid         = [] # residue id
+            self.resname       = [] # residue name
+            self.name          = [] # atom name
+            self.type          = [] # atom type
+            self.charge        = [] # charge
+            self.mass          = [] # mass
+            self.num_subst     = 0  # number of substructures
+            self.num_feat      = 0  # number of features
+            self.num_sets      = 0  # number of sets
+            self.subst_id      = [] # substructure ID number
+            self.subst_name    = [] # substructure name
+            self.substructures = [] # reserved for the substructure section in the mol2 file
+            self.num_bonds     = 0  # number of chemical bonds
+            self.bond_list     = []
+            self.bond_matrix   = None
             # Matrix of bonds, which is a symmetric matrix in its linear 
             # representation, for the sake of memory savings. The presence or 
             # absence of a bond between atoms (row, colune) is indicated in 
             # self.bond_matrix[k], where k corresponds to indices (i, j) in the 
             # matricial representation.
-
             self.num_angles     = 0  # number of angles
             self.angle_list     = [] # list of angles - in triplets
             self.num_dihedrals  = 0  # number of dihedrals (torsions)
@@ -84,27 +91,37 @@ class Molecule:
                 if '@<TRIPOS>MOLECULE' in line:
                     line = inf.readline()
                     line = inf.readline().split()
-                    self.num_atoms = int(line[0])
+                    self.num_atoms          = int(line[0])
                     self.topology.num_bonds = int(line[1])
+                    self.topology.num_subst = int(line[2])
+                    self.topology.num_feat  = int(line[3])
+                    self.topology.num_sets  = int(line[4])
+                    self.molecule_type = inf.readline().strip()
+                    self.charge_type   = inf.readline().strip()
                 elif '@<TRIPOS>ATOM' in line:
                     natoms = self.num_atoms
                     self.atom = np.empty(natoms, dtype='U4')
                     self.x = np.zeros(natoms, dtype='float32')
                     self.y = np.zeros(natoms, dtype='float32')
                     self.z = np.zeros(natoms, dtype='float32')
-                    self.topology.type = np.empty(natoms, dtype='U5')
-                    self.topology.charge = np.zeros(natoms, dtype='float16')
+                    self.topology.type       = np.empty(natoms, dtype='U5')
+                    self.topology.charge     = np.zeros(natoms, dtype='float16')
+                    self.topology.subst_id   = np.zeros(natoms, dtype='uint8')
+                    self.topology.subst_name = np.empty(natoms, dtype='U5')
                     for i in range(natoms):
                         line = inf.readline().split()
                         self.atom[i] = line[1]
                         self.x[i] = float(line[2])
                         self.y[i] = float(line[3])
                         self.z[i] = float(line[4])
-                        self.topology.type[i] = line[5]
-                        self.topology.charge[i] = line[8]
+                        self.topology.type[i]       = line[5]
+                        self.topology.subst_id[i]   = line[6]
+                        self.topology.subst_name[i] = line[7]
+                        if len(line) > 8:
+                            self.topology.charge[i]     = line[8]
                 elif '@<TRIPOS>BOND' in line:
                     nbonds = self.topology.num_bonds
-                    self.topology.bond_list = np.zeros(nbonds * 2, dtype='uint8')
+                    self.topology.bond_list   = np.zeros(nbonds * 2, dtype='uint8')
                     self.topology.bond_matrix = np.zeros(Trimatrix.get_size(
                         self.num_atoms
                     ), dtype=bool)
@@ -113,21 +130,30 @@ class Molecule:
                         self.topology.bond_matrix[Trimatrix.get_index(
                             int(line[1]) - 1, int(line[2]) - 1
                         )] = True
-                        self.topology.bond_list[i] = line[1]
+                        self.topology.bond_list[i]   = line[1]
                         self.topology.bond_list[i+1] = line[2]
+                elif '@<TRIPOS>SUBSTRUCTURE' in line:
+                    line = inf.readline().strip()
+                    while line:
+                        self.topology.substructures.append(line)
+                        line = inf.readline().strip()
+
                 line = inf.readline()
+        self.gen_angle_list_from_bond_list()
 
     def write_mol2(self, filename):
         with open(filename, 'w+') as outf:
             natoms = self.num_atoms
             nbonds = self.topology.num_bonds
             outf.write('@<TRIPOS>MOLECULE\nMOL\n')
-            outf.write('{:>5d}{:>5d}{:>5}{:>5}{:>5}\n'.format(natoms, nbonds, '', '', ''))
-            outf.write('{}\n{}\n\n\n'.format('', ''))
+            outf.write('{:>5d}{:>5d}'.format(natoms, nbonds))
+            outf.write('{:>5}{:>5}{:>5}\n'.format(self.topology.num_subst, self.topology.num_feat, self.topology.num_sets))
+            outf.write('{}\n{}\n\n\n'.format(self.molecule_type, self.charge_type))
             outf.write('@<TRIPOS>ATOM\n')
             for i in range(natoms):
                 outf.write('{0:>4} {1:>4} {2:>13.4f} {3:>9.4f} {4:>9.4f} {5:>4} {6} {7} {8:>7.4f}\n'.format(
-                    i+1, self.atom[i], self.x[i], self.y[i], self.z[i], self.topology.type[i], '', '', self.topology.charge[i]
+                    i+1, self.atom[i], self.x[i], self.y[i], self.z[i], self.topology.type[i],
+                    self.topology.subst_id[i], self.topology.subst_name[i], self.topology.charge[i]
                 ))
             outf.write('@<TRIPOS>BOND\n')
             count = 0
@@ -136,6 +162,11 @@ class Molecule:
                     i+1, self.topology.bond_list[count], self.topology.bond_list[count+1], 1
                 ))
                 count += 2
+            if self.topology.num_subst != 0:
+                outf.write('@<TRIPOS>SUBSTRUCTURE\n')
+                for i in range(self.topology.num_subst):
+                    outf.write('{}\n'.format(self.topology.substructures[i]))
+
 
     def read_psf(self, filename):
         with open(filename, 'r') as inf:
@@ -257,16 +288,16 @@ class Molecule:
                outf.write('{:>10d}'.format(0))
                if ((i + 1) % 8 == 0 and i != 0) or (i == natoms - 1):
                     outf.write('\n')
-            
+
     def read_pdb(self, filename):
         with open(filename, 'r') as inf:
             if self.num_atoms != 0:
-                # Statically allocates memory as long as there has already been a 
-                # corresponding .psf file read, which will determine to the function 
-                # the number of spaces (number of atoms) that need to be preallocated. 
+                # Statically allocates memory as long as there has already been a
+                # corresponding .psf file read, which will determine to the function
+                # the number of spaces (number of atoms) that need to be preallocated.
                 # Static allocation is preferable over dynamic allocation, since it
-                # uses numpy arrays, which can save up memory by limiting the variables 
-                # sizes. Also, the 'append' method is slower than preallocating the 
+                # uses numpy arrays, which can save up memory by limiting the variables
+                # sizes. Also, the 'append' method is slower than preallocating the
                 # elements and then assigning them values.
                 natoms        = self.num_atoms
                 self.id       = np.empty(natoms, dtype='U6')
@@ -326,11 +357,10 @@ class Molecule:
                     elif 'TER' in line or 'END' in line:
                         break
                 self.num_atoms = len(self.id)
-                    
+
     def write_pdb(self, filename, mode, n):
         with open(filename, mode) as outf:
             outf.write('MODEL     {:4d}\n'.format(n))
-            # outf.write('CRYST1    0.000    0.000    0.000  90.00  90.00  90.00 P 1           1\n')
             for i in range(self.num_atoms):
                 if(self.id[i] == 'ATOM' or self.id[i] == 'HETATM'):
                     outf.write('{:6s}{:5d} {:^4s}{:1s}{:3s} {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}{:6.2f}{:6.2f}      {:>2s}{:2s}\n'.format(
@@ -375,7 +405,7 @@ class Molecule:
                     while line.strip():
                         key = line[0:11]
                         angle_rad = float(line[24:38].strip())*np.pi/180
-                        line = [int(line[11:15].strip()), float(line[15:24].strip()), 
+                        line = [int(line[11:15].strip()), float(line[15:24].strip()),
                                  angle_rad, float(line[38:54].strip())]
                         if key not in self.topology.dihedral_types.keys():
                             self.topology.dihedral_types[key] = [line]
@@ -383,7 +413,7 @@ class Molecule:
                             self.topology.dihedral_types[key].append(line)
                         line = inf.readline()
                 line = inf.readline()
-                
+
     def get_bond_list(self, a):
         blist = []
         a = a-1
@@ -398,7 +428,7 @@ class Molecule:
                 blist.append(i+1)
 
         return blist
-    
+
     def get_angle_list(self, a):
         alist = []
 
@@ -409,7 +439,7 @@ class Molecule:
                 alist.append(int(self.topology.angle_list[i+2]))
 
         return alist
-    
+
     def get_dihedral_list(self, a):
         dlist = []
 
@@ -421,7 +451,42 @@ class Molecule:
                 dlist.append(int(self.topology.dihedral_list[i+3]))
 
         return dlist
-    
+
+    def gen_angle_list_from_bond_list(self):
+        nbonds = self.topology.num_bonds
+        for i in range(0, nbonds*2, 2):
+            for j in range(i+2, nbonds*2, 2):
+                if self.topology.bond_list[j] == self.topology.bond_list[i+1]:
+                    self.topology.angle_list.append(self.topology.bond_list[i])
+                    self.topology.angle_list.append(self.topology.bond_list[i+1])
+                    self.topology.angle_list.append(self.topology.bond_list[j+1])
+                elif self.topology.bond_list[j] == self.topology.bond_list[i]:
+                    self.topology.angle_list.append(self.topology.bond_list[i+1])
+                    self.topology.angle_list.append(self.topology.bond_list[i])
+                    self.topology.angle_list.append(self.topology.bond_list[j+1])
+        self.topology.num_angles = int(len(self.topology.angle_list)/3)
+
+    def gen_dihed_list_from_angle_list(self):
+        if self.topology.num_angles == 0:
+            self.gen_angle_list_from_bond_list()
+        nangles = self.topology.num_angles
+        for i in range(0, nangles*3, 3):
+            for j in range(i+3, nangles*3, 3):
+                if(self.topology.angle_list[j+1] == self.topology.angle_list[i] and
+                        self.topology.angle_list[j] == self.topology.angle_list[i+1]):
+                    self.topology.dihedral_list.append(self.topology.angle_list[i+2])
+                    self.topology.dihedral_list.append(self.topology.angle_list[j])
+                    self.topology.dihedral_list.append(self.topology.angle_list[i])
+                    self.topology.dihedral_list.append(self.topology.angle_list[j+2])
+                elif(self.topology.angle_list[j] == self.topology.angle_list[i+1] and
+                        self.topology.angle_list[j+1] == self.topology.angle_list[i+2]):
+                    self.topology.dihedral_list.append(self.topology.angle_list[i])
+                    self.topology.dihedral_list.append(self.topology.angle_list[j])
+                    self.topology.dihedral_list.append(self.topology.angle_list[j+1])
+                    self.topology.dihedral_list.append(self.topology.angle_list[j+2])
+        self.topology.num_dihedrals = int(len(self.topology.dihedral_list)/4)
+
+
 ##############################################################################
 if is_main():
     # code here

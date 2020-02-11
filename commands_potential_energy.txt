@@ -1,0 +1,34 @@
+	# pdb, psf, out_pdb, out_psf = molecule.get_cmd_line()
+
+	molecule.read_psf(path2 + '.psf')
+    molecule.read_pdb(path1 + '.pdb')
+    molecule.read_frcmod(path2 + '.frcmod')
+
+    Vb = bond_potential(molecule)
+    Va = angle_potential(molecule)
+    Vd = dihedral_potential(molecule)
+    fx = np.zeros(molecule.num_atoms, dtype='float32')
+    fy = np.zeros(molecule.num_atoms, dtype='float32')
+    fz = np.zeros(molecule.num_atoms, dtype='float32')
+    bond_force(molecule, fx, fy, fz)
+    angle_force(molecule, fx, fy, fz)
+    dihedral_force(molecule, fx, fy, fz)
+
+    # minimize_pot_energy(molecule, fx, fy, fz)
+    
+    heuristic_conformation(molecule, theta=np.pi/6, arquivo=path1+'_heuristic.pdb')
+
+    Vb1 = bond_potential(molecule)
+    Va1 = angle_potential(molecule)
+    Vd1 = dihedral_potential(molecule)
+    fx1 = np.zeros(molecule.num_atoms, dtype='float32')
+    fy1 = np.zeros(molecule.num_atoms, dtype='float32')
+    fz1 = np.zeros(molecule.num_atoms, dtype='float32')
+    bond_force(molecule, fx1, fy1, fz1)
+    angle_force(molecule, fx1, fy1, fz1)
+    dihedral_force(molecule, fx1, fy1, fz1)
+    print(Vd, Vd1)
+    
+    angle_list, Vd_list = dihedral_Ep_rotate(molecule, a=2, b=3, theta=np.pi / 180, ntimes=360,
+                                             pdf_name='./Graphs/Ep_3-metil-pentano.pdf', write_pdb=False,
+                                             pdb_name=path1 + '_rotated.pdb')

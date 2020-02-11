@@ -1,4 +1,4 @@
-def cross_product_3d(molecule, v1x, v2x, v1y, v2y, v1z, v2z):
+def cross_product_3d(v1x, v2x, v1y, v2y, v1z, v2z):
     # The cross product is the determinant of the matrix below:
     #       |  i  j  k |
     #   det | x1 y1 z1 |
