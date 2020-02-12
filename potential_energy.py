@@ -65,6 +65,7 @@ def dihedral_Ep_rotate(molecule, a, b, theta, ntimes, pdf_name,
             for atom in rlist:
                 rotate_atom(molecule, atom)
             Vd[i], dihed_angle[i] = _dihedral_potential(molecule)
+            dihed_angle[i] = dihed_angle[i]*180/np.pi + 180
             plt.scatter(dihed_angle[i], Vd[i], marker='.', color='royalblue')
     else:
         molecule.write_pdb(pdb_name, 'w+', 0)
@@ -72,6 +73,7 @@ def dihedral_Ep_rotate(molecule, a, b, theta, ntimes, pdf_name,
             for atom in rlist:
                 rotate_atom(molecule, atom)
             Vd[i], dihed_angle[i] = _dihedral_potential(molecule)
+            dihed_angle[i] = dihed_angle[i]*180/np.pi + 180
             plt.scatter(dihed_angle[i], Vd[i], marker='.', color='royalblue')
             molecule.write_pdb(pdb_name, 'a', i)
     plot_Ep(theta, ntimes, pdf_name)
