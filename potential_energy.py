@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from class_molecule import Molecule
 from rotate import get_rotation_list, init_rotation_axis, set_rotation_angle, rotate_atom
 from cross_product_3d import cross_product_3d
+from plot_Ep import plot_Ep
 
 def is_main():
     return __name__ == '__main__'
@@ -73,13 +74,7 @@ def dihedral_Ep_rotate(molecule, a, b, theta, ntimes, pdf_name,
             Vd[i], dihed_angle[i] = _dihedral_potential(molecule)
             plt.scatter(dihed_angle[i], Vd[i], marker='.', color='royalblue')
             molecule.write_pdb(pdb_name, 'a', i)
-    plt.xlabel('Degrees (rad)')
-    plt.ylabel(r'Elastic potential (kcal $mol^{-1} \AA^{-2}$)')
-    plt.grid()
-    plt.suptitle('Rotation degrees X Dihedral elastic potential (Vd) graphic')
-    plt.title(r'{}$^\circ$ x {} rotations'.format(theta * 180 / math.pi, ntimes), fontsize=10, loc='right')
-    plt.savefig(pdf_name)
-    plt.show()
+    plot_Ep(theta, ntimes, pdf_name)
     return dihed_angle, Vd
 
 def minimize_pot_energy(molecule, fx, fy, fz):
@@ -599,8 +594,9 @@ def angle_dihedral_potential_opls(molecule, atom1, atom2, atom3, atom4):
 def _dihedral_potential(molecule, ForceField='gaff'):
     ndihed = molecule.topology.num_dihedrals
     Vd = 0
+    dihed_angle = 0
     if ForceField == 'opls':
-        for i in range(0, ndihed, 4):
+        for i in range(0, ndihed*4, 4):
             atom1 = molecule.topology.dihedral_list[i] - 1
             atom2 = molecule.topology.dihedral_list[i + 1] - 1
             atom3 = molecule.topology.dihedral_list[i + 2] - 1
@@ -611,7 +607,7 @@ def _dihedral_potential(molecule, ForceField='gaff'):
             Vd += aux1
             dihed_angle = aux2
     else:
-        for i in range(0, ndihed, 4):
+        for i in range(0, ndihed*4, 4):
             atom1 = molecule.topology.dihedral_list[i] - 1
             atom2 = molecule.topology.dihedral_list[i + 1] - 1
             atom3 = molecule.topology.dihedral_list[i + 2] - 1
@@ -657,7 +653,6 @@ if is_main():
 
     molecule = Molecule()
 
-    '''
     path = './butane'
     path1 = path + '/sqm/sqm'
     path2 = path + '/butane'
@@ -667,6 +662,7 @@ if is_main():
     path1 = path + '/3-metil-pentano'
     path2 = path + '/3-metil-pentano'
 
+    '''
     molecule.read_mol2(path1 + '.mol2')
     molecule.gen_dihed_list_from_angle_list()
     molecule.read_frcmod(path2 + '.frcmod')
@@ -677,9 +673,9 @@ if is_main():
 
     # minimize_pot_energy(molecule, fx, fy, fz)
 
-    heuristic_conformation(molecule, theta=np.pi/6, arquivo=path1+'_heuristic.mol2')
+    # heuristic_conformation(molecule, theta=np.pi/6, arquivo=path1+'_heuristic.mol2')
 
+    Ud, dihed_angles = dihedral_Ep_rotate(molecule, 2, 3, np.pi/180, 360, 'Ep_sqm2.pdf', False)
     Vb1 = bond_potential(molecule)
     Va1 = angle_potential(molecule)
     Vd1 = dihedral_potential(molecule)
-    river = 0
