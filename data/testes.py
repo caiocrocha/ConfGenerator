@@ -82,7 +82,7 @@
 # NONBON
 #   c3          1.9080  0.1094
 #   hc          1.4870  0.0157
-
+'''
 with open ('comparar.dat', 'w+') as arq:
 	for i in range(0, len(Vd_list), 10):
 		arq.write('{:.3f},{:.6f}\n'.format(angle_list[i], Vd_list[i]))
@@ -90,3 +90,11 @@ with open ('comparar.dat', 'w+') as arq:
 import pandas as pd
 output=pd.DataFrame(Vd_list, angle_list)
 output.to_csv('comparar.dat')
+'''
+import scipy
+from time import time
+t0 = time()
+for i in range(1000000):
+	var = scipy.pi
+t1 = time() - t0
+end = 0

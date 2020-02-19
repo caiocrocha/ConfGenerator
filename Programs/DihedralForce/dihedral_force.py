@@ -2,13 +2,19 @@ import math
 
 import cross_product_3d
 import DihedralPotential.dihedral_potential_energy as dihedral_potential_energy
-import get_dihedral_type
+import DihedralPotential.get_dihedral_type as get_dihedral_type
 
 def dihedral_force_variables(molecule, atom1, atom2, atom3, atom4, dtype):
     (length, A1, A2, A3, A4, dihed_angle, x2, y2, z2, x3, y3, z3,
-     v21x, v21y, v21z, v23x, v23y, v23z, v34x, v34y, v34z, v32x, v32y, v32z,
-     n1x, n1y, n1z, n2x, n2y, n2z) = dihedral_potential_energy._dihedral_pot_variables(
-        molecule, atom1, atom2, atom3, atom4, dtype)
+     v21x, v21y, v21z, v23x, v23y, v23z, v34x, v34y, v34z, v32x, v32y, v32z
+    ) = dihedral_potential_energy._dihedral_pot_variables(
+            molecule, atom1, atom2, atom3, atom4, dtype)
+
+    n1x, n1y, n1z = cross_product_3d.cross_product_3d(v21x, v23x, v21y, v23y, v21z, v23z)
+    # normal vector of the plane determined by vectors v21 and v23
+    n2x, n2y, n2z = cross_product_3d.cross_product_3d(v32x, v34x, v32y, v34y, v32z, v34z)
+    # normal vector of the plane determined by vectors v32 and v34
+
     norm1 = (v21x * v21x + v21y * v21y + v21z * v21z) ** 0.5  # norm of vector v21 (or v12)
     norm2 = (v23x * v23x + v23y * v23y + v23z * v23z) ** 0.5  # norm of vector v23 (or v32)
     norm3 = (v34x * v34x + v34y * v34y + v34z * v34z) ** 0.5  # norm of vector v34 (or v43)

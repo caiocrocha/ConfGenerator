@@ -12,12 +12,12 @@ def init_rotation_axis(molecule, a, b, theta):
     # which is mathematicaly defined by its original components divided by the square root
     # of its magnitude.
     global Ax, Ay, Az, ux, uy, uz
-    Ax = molecule.x[a-1]
-    Ay = molecule.y[a-1]
-    Az = molecule.z[a-1]
-    Bx = molecule.x[b-1]
-    By = molecule.y[b-1]
-    Bz = molecule.z[b-1]
+    Ax = molecule.x[a]
+    Ay = molecule.y[a]
+    Az = molecule.z[a]
+    Bx = molecule.x[b]
+    By = molecule.y[b]
+    Bz = molecule.z[b]
     ABx = Bx - Ax
     ABy = By - Ay
     ABz = Bz - Az
@@ -53,7 +53,7 @@ def recursive_fast_rotate(molecule, atom, previous):
             recursive_fast_rotate(molecule, i, atom)
             
 def fast_rotate(molecule, a, b, theta): # bond a-b, rotate chain from b // theta in radians
-    init_rotation_axis(molecule, a, b, theta)
+    init_rotation_axis(molecule, a-1, b-1, theta)
     recursive_fast_rotate(molecule, atom=b-1, previous=a-1)
     
 def recursive_rotation_list(molecule, atom, previous, rlist):
@@ -68,7 +68,7 @@ def recursive_rotation_list(molecule, atom, previous, rlist):
             recursive_rotation_list(molecule, i, atom, rlist)
     
 def rotate(molecule, rotation_list, a, b, theta, ntimes, write_pdb=False, pdb_name=None):
-    init_rotation_axis(molecule, a, b, theta)
+    init_rotation_axis(molecule, a-1, b-1, theta)
     if not write_pdb:
         for i in range(ntimes):
             for atom in rotation_list:
@@ -82,5 +82,5 @@ def rotate(molecule, rotation_list, a, b, theta, ntimes, write_pdb=False, pdb_na
                       
 def get_rotation_list(molecule, a, b):
     rotation_list = []
-    recursive_rotation_list(molecule, b-1, a-1, rotation_list)
+    recursive_rotation_list(molecule, b, a, rotation_list)
     return rotation_list

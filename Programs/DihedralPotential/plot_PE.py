@@ -1,7 +1,7 @@
 import math
 import matplotlib.pyplot as plt
 
-def plot_Ep(theta, ntimes, pdf_name):
+def plot_PE(theta, ntimes, pdf_name):
     plt.xlabel('Degrees (rad)')
     plt.ylabel(r'Elastic potential (kcal $mol^{-1} \AA^{-2}$)')
     plt.grid()

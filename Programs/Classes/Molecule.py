@@ -391,7 +391,7 @@ class Molecule:
                 elif 'ANGLE' in line:
                     line = inf.readline()
                     while line.strip():
-                        angle_rad = float(line[17:29].strip())*np.pi/180
+                        angle_rad = float(line[17:29].strip())*math.pi/180
                         self.topology.angle_types[line[0:8].strip()] = (
                             (float(line[8:17].strip()), angle_rad)
                             )
@@ -400,7 +400,7 @@ class Molecule:
                     line = inf.readline()
                     while line.strip():
                         key = line[0:11]
-                        angle_rad = float(line[24:38].strip())*np.pi/180
+                        angle_rad = float(line[24:38].strip())*math.pi/180
                         line = [int(line[11:15].strip()), float(line[15:24].strip()),
                                  angle_rad, float(line[38:54].strip())]
                         if key not in self.topology.dihedral_types.keys():

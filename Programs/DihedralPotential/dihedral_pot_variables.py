@@ -1,7 +1,7 @@
 import numpy as np
 
 import cross_product_3d
-import get_dihedral_angle
+import DihedralPotential.get_dihedral_angle as get_dihedral_angle
 
 def _dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4, dtype):
     x1 = molecule.x[atom1]
@@ -29,6 +29,8 @@ def _dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4, dtype):
     v32x = -v23x
     v32y = -v23y
     v32z = -v23z
+
+    dihed_angle = get_dihedral_angle.get_dihedral_angle(v21x, v21y, v21z, v23x, v23y, v23z, v34x, v34y, v34z)
 
     try:
         length = len(molecule.topology.dihedral_types[dtype])
@@ -62,32 +64,8 @@ def _dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4, dtype):
         except:
             raise AttributeError('Could not find corresponding dihedral type')
 
-    n1x, n1y, n1z = cross_product_3d.cross_product_3d(v21x, v23x, v21y, v23y, v21z, v23z)
-    # normal vector of the plane determined by vectors v21 and v23
-    n2x, n2y, n2z = cross_product_3d.cross_product_3d(v32x, v34x, v32y, v34y, v32z, v34z)
-    # normal vector of the plane determined by vectors v32 and v34
-    '''
-    nx, ny, nz = cross_product_3d.cross_product_3d(molecule, n1x, n2x, n1y, n2y, n1z, n2z)
-    # normal vector of the plane determined by n1 and n2
-    M = (nx*nx + ny*ny + nz*nz)**0.5    # magnitude of normal vector n
-    if M != 0:
-        det = (nx*abs(nx) + ny*abs(ny) + nz*abs(nz))/M
-        # Let u = abs(n)/M (normalization of vector n). The determinant det(n1, n2, u)
-        # is proportional to the sine of the angle between vectors n1 and n2. It can be
-        # expressed as the triple product between n1, n2 and u. Triple product:
-        # (n1 x n2) * u
-        dot = n1x * n2x + n1y * n2y + n1z * n2z
-        # the dot product between n1 and n2 is proportional to the cosine of the angle
-        # dihed_angle = math.atan2(det, dot)
-        dihed_angle = math.atan2(det, dot)
-    else:
-        dihed_angle = 0
-    '''
-    dihed_angle = get_dihedral_angle.get_dihedral_angle(molecule, atom1, atom2, atom3, atom4)
-
     return (length, A1, A2, A3, A4, dihed_angle, x2, y2, z2, x3, y3, z3,
-            v21x, v21y, v21z, v23x, v23y, v23z, v34x, v34y, v34z, v32x, v32y, v32z,
-            n1x, n1y, n1z, n2x, n2y, n2z)
+            v21x, v21y, v21z, v23x, v23y, v23z, v34x, v34y, v34z, v32x, v32y, v32z)
 
 def dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4, dtype):
     length, A1, A2, A3, A4, dihed_angle = _dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4, dtype)[0:6]
