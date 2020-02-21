@@ -24,21 +24,21 @@ if is_main():
     path = os.path.dirname(os.path.abspath(__file__))
 
     '''
-    path1 = path + '/../Etileno_glicol'
-    path2 = path3 = path1 + '/ligand'
-    
     path1 = path + '/../3-metil-pentano'
     path2 = path3 = path1 + '/3-metil-pentano'
-    '''
 
     path1 = path + '/../butane'
     path2 = path1 + '/sqm/sqm'
     path3 = path1 + '/butane_parm'
+    '''
+
+    path1 = path + '/../Etileno_glicol'
+    path2 = path3 = path1 + '/ligand'
 
     molecule.read_mol2(path2 + '.mol2')
     molecule.gen_dihed_list_from_angle_list()
     molecule.read_frcmod(path3 + '.frcmod')
-
+    '''
     Vb = bond_potential_energy.bond_potential(molecule)
     Va = angle_potential_energy.angle_potential(molecule)
     Vd = dihedral_potential_energy.total_dihedral_potential(molecule)
@@ -50,6 +50,6 @@ if is_main():
     print('Va =', Va)
     print('Vd (antes) =', Vd)
     print('Vd (depois) =', Vd1)
-
-    # dihedral_energy_graphic.dihedral_energy_graphic(molecule, 1, 2, 3, 4, np.pi/180, 360, pdf_name=path+'/../Graphs/Ep_butane.pdf',
-    #                                                 write_mol2=False, mol2_name=path2 + '_rotated.mol2')
+    '''
+    dihedral_energy_graphic.dihedral_energy_graphic(molecule, 4, 1, 2, 3, np.pi/180, 360, pdf_name=path+'/../Graphs/PE_ligand_semH.pdf',
+                                                    write_mol2=False, mol2_name=path2 + '_rotated.mol2')
