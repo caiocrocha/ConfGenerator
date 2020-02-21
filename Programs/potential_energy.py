@@ -21,36 +21,35 @@ if is_main():
 
     molecule = Molecule()
 
-    path = os.getcwd()
-
-    path2 = '../../../Etileno_glicol/ligand'
-    path3 = '../../../Etileno_glicol/ligand'
-
+    path = os.path.dirname(os.path.abspath(__file__))
 
     '''
-    path1 = path + '../butane'
-    path2 = path1 + '/sqm/sqm'
-    path3 = path1 + '/butane'
+    path1 = path + '/../Etileno_glicol'
+    path2 = path3 = path1 + '/ligand'
     
-    path1 = path + '../3-metil-pentano'
-    path2 = path1 + '/3-metil-pentano'
-    path3 = path1 + '/3-metil-pentano'
+    path1 = path + '/../3-metil-pentano'
+    path2 = path3 = path1 + '/3-metil-pentano'
     '''
+
+    path1 = path + '/../butane'
+    path2 = path1 + '/sqm/sqm'
+    path3 = path1 + '/butane_parm'
 
     molecule.read_mol2(path2 + '.mol2')
     molecule.gen_dihed_list_from_angle_list()
     molecule.read_frcmod(path3 + '.frcmod')
-    
+
     Vb = bond_potential_energy.bond_potential(molecule)
     Va = angle_potential_energy.angle_potential(molecule)
     Vd = dihedral_potential_energy.total_dihedral_potential(molecule)
-    print(Vb, Va, Vd)
 
-    '''
-    molecule.write_mol2(path2+'_heuristic.mol2')
+    heuristic_conformation.heuristic_conformation(molecule, np.pi/6)
 
-    Vb1 = bond_potential_energy.bond_potential(molecule)
-    Va1 = angle_potential_energy.angle_potential(molecule)
     Vd1 = dihedral_potential_energy.total_dihedral_potential(molecule)
-    '''
-    dihedral_energy_graphic.dihedral_energy_graphic(molecule, 1, 2, np.pi/180, 360, pdf_name='../Graphs/Ep_ligand.pdf', write_mol2 = True, mol2_name = path2 + '_rotated')
+    print('Vb =', Vb)
+    print('Va =', Va)
+    print('Vd (antes) =', Vd)
+    print('Vd (depois) =', Vd1)
+
+    # dihedral_energy_graphic.dihedral_energy_graphic(molecule, 1, 2, 3, 4, np.pi/180, 360, pdf_name=path+'/../Graphs/Ep_butane.pdf',
+    #                                                 write_mol2=False, mol2_name=path2 + '_rotated.mol2')

@@ -7,6 +7,7 @@ class Molecule:
         self.topology  = self.Topology()
         self.id        = [] # 'ATOM' or 'HETATM'
         self.atom      = [] # atom name
+        self.atom_type          = [] # atom type
         self.alt_loc   = [] # alternate location indicator
         self.residue   = [] # residue name
         self.chain     = [] # chain identifier
@@ -22,14 +23,13 @@ class Molecule:
         self.num_atoms = 0  # number of atoms
         self.molecule_type = ''
         self.charge_type = ''
-        
+
     class Topology:
         def __init__(self):
             self.segid         = [] # segment name
             self.resid         = [] # residue id
             self.resname       = [] # residue name
             self.name          = [] # atom name
-            self.type          = [] # atom type
             self.charge        = [] # charge
             self.mass          = [] # mass
             self.num_subst     = 0  # number of substructures
@@ -64,22 +64,6 @@ class Molecule:
             # self.dihedral_types['c3-c3-c3-c3'][2] (dihedral angle converted to radians) 
             # or self.dihedral_types['c3-c3-c3-c3'][3] (multiplicity).
 
-    # def get_cmd_line():
-    #     parser = argparse.ArgumentParser(description = 'PDB and PSF reader, chain rotator.')
-    
-    #     parser.add_argument('--pdb', action = 'store',     dest = 'pdb', required = True, help = 'PDB file.')
-    #     parser.add_argument('--psf', action = 'store',     dest = 'psf', required = True, help = 'PSF file.')
-    #     parser.add_argument('--new_pdb', action = 'store',     dest = 'new_pdb', required = True, help = 'New PDB file.')
-    #     parser.add_argument('--new_psf', action = 'store',     dest = 'new_psf', required = True, help = 'New PSF file.')
-    
-    #     arguments = parser.parse_args()
-    
-    #     # Assign from cmd line.
-    #     return (arguments.pdb,
-    #             arguments.psf,
-    #             arguments.new_pdb,
-    #             arguments.new_psf)  
-
     def read_mol2(self, filename):
         with open (filename, 'r') as inf:
             line = inf.readline()
@@ -100,7 +84,7 @@ class Molecule:
                     self.x = np.zeros(natoms, dtype='float32')
                     self.y = np.zeros(natoms, dtype='float32')
                     self.z = np.zeros(natoms, dtype='float32')
-                    self.topology.type       = np.empty(natoms, dtype='U5')
+                    self.atom_type       = np.empty(natoms, dtype='U5')
                     self.topology.charge     = np.zeros(natoms, dtype='float16')
                     self.topology.subst_id   = np.zeros(natoms, dtype='uint8')
                     self.topology.subst_name = np.empty(natoms, dtype='U5')
@@ -110,7 +94,7 @@ class Molecule:
                         self.x[i] = float(line[2])
                         self.y[i] = float(line[3])
                         self.z[i] = float(line[4])
-                        self.topology.type[i]       = line[5]
+                        self.atom_type[i]       = line[5]
                         self.topology.subst_id[i]   = line[6]
                         self.topology.subst_name[i] = line[7]
                         if len(line) > 8:
@@ -137,8 +121,8 @@ class Molecule:
                 line = inf.readline()
         self.gen_angle_list_from_bond_list()
 
-    def write_mol2(self, filename):
-        with open(filename, 'w+') as outf:
+    def write_mol2(self, filename, mode):
+        with open(filename, mode) as outf:
             natoms = self.num_atoms
             nbonds = self.topology.num_bonds
             outf.write('@<TRIPOS>MOLECULE\nMOL\n')
@@ -148,7 +132,7 @@ class Molecule:
             outf.write('@<TRIPOS>ATOM\n')
             for i in range(natoms):
                 outf.write('{0:>4} {1:>4} {2:>13.4f} {3:>9.4f} {4:>9.4f} {5:>4} {6} {7} {8:>7.4f}\n'.format(
-                    i+1, self.atom[i], self.x[i], self.y[i], self.z[i], self.topology.type[i],
+                    i+1, self.atom[i], self.x[i], self.y[i], self.z[i], self.atom_type[i],
                     self.topology.subst_id[i], self.topology.subst_name[i], self.topology.charge[i]
                 ))
             outf.write('@<TRIPOS>BOND\n')
@@ -162,7 +146,7 @@ class Molecule:
                 outf.write('@<TRIPOS>SUBSTRUCTURE\n')
                 for i in range(self.topology.num_subst):
                     outf.write('{}\n'.format(self.topology.substructures[i]))
-
+            outf.write('\n')
 
     def read_psf(self, filename):
         with open(filename, 'r') as inf:
@@ -174,7 +158,7 @@ class Molecule:
                     self.topology.resid     = np.zeros(natoms, dtype='uint8')
                     self.topology.resname   = np.empty(natoms, dtype='U3')
                     self.topology.name      = np.empty(natoms, dtype='U5')
-                    self.topology.type      = np.empty(natoms, dtype='U5')
+                    self.atom_type      = np.empty(natoms, dtype='U5')
                     self.topology.charge    = np.zeros(natoms, dtype='float16')
                     self.topology.mass      = np.zeros(natoms, dtype='float16')
 
@@ -184,7 +168,7 @@ class Molecule:
                         self.topology.resid[i]   = line[2]
                         self.topology.resname[i] = line[3]
                         self.topology.name[i]    = line[4]
-                        self.topology.type[i]    = line[5]
+                        self.atom_type[i]    = line[5]
                         self.topology.charge[i]  = line[6]
                         self.topology.mass[i]    = line[7]
 
@@ -244,7 +228,7 @@ class Molecule:
                 self.topology.resid[i],
                 self.topology.resname[i],
                 self.topology.name[i],
-                self.topology.type[i],
+                self.atom_type[i],
                 self.topology.charge[i],
                 self.topology.mass[i])
                     )

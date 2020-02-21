@@ -2,6 +2,7 @@ import numpy as np
 
 import cross_product_3d
 import DihedralPotential.get_dihedral_angle as get_dihedral_angle
+import DihedralPotential.get_dihedral_type as get_dihedral_type
 
 def _dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4, dtype):
     x1 = molecule.x[atom1]
@@ -44,11 +45,7 @@ def _dihedral_pot_variables(molecule, atom1, atom2, atom3, atom4, dtype):
             A3[i] = molecule.topology.dihedral_types[dtype][i][2]
             A4[i] = molecule.topology.dihedral_types[dtype][i][3]
     except:
-        dtype = ('{}-{}-{}-{}'.format(molecule.topology.type[atom4],
-                                      molecule.topology.type[atom3],
-                                      molecule.topology.type[atom2],
-                                      molecule.topology.type[atom1])
-                 )  # dihedral type (e.g. 'c3-c3-c3-c3')
+        dtype = get_dihedral_type.get_dihedral_type(molecule, atom4, atom3, atom2, atom1)
         try:
             length = len(molecule.topology.dihedral_types[dtype])
             A1 = np.zeros(length)

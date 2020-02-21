@@ -21,15 +21,15 @@ def _angle_pot_variables(molecule, atom1, atom2, atom3):
     norm1 = (v21x * v21x + v21y * v21y + v21z * v21z) ** 0.5  # norm of vector v21 (or v12)
     norm2 = (v23x * v23x + v23y * v23y + v23z * v23z) ** 0.5  # norm of vector v23 (or v32)
 
-    atype = ('{}-{}-{}'.format(molecule.topology.type[atom1],
-                               molecule.topology.type[atom2], molecule.topology.type[atom3])
+    atype = ('{}-{}-{}'.format(molecule.atom_type[atom1],
+                               molecule.atom_type[atom2], molecule.atom_type[atom3])
              )  # angle type (e.g. 'c3-c3-hc' or 'c3-c3-c3')
     try:
         Ka = molecule.topology.angle_types[atype][0]  # angle elastic constant
         a0 = molecule.topology.angle_types[atype][1]  # equilibrium angle
     except:
-        atype = ('{}-{}-{}'.format(molecule.topology.type[atom3],
-                                   molecule.topology.type[atom2], molecule.topology.type[atom1])
+        atype = ('{}-{}-{}'.format(molecule.atom_type[atom3],
+                                   molecule.atom_type[atom2], molecule.atom_type[atom1])
                  )
         try:
             Ka = molecule.topology.angle_types[atype][0]

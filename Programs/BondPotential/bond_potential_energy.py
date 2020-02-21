@@ -3,15 +3,15 @@ def bond_pot_variables(molecule, atom1, atom2):
     by = molecule.y[atom2] - molecule.y[atom1]
     bz = molecule.z[atom2] - molecule.z[atom1]
     b = (bx * bx + by * by + bz * bz) ** 0.5  # distance between atoms 1 and 2
-    btype = ('{}-{}'.format(molecule.topology.type[atom1],
-                            molecule.topology.type[atom2])
+    btype = ('{}-{}'.format(molecule.atom_type[atom1],
+                            molecule.atom_type[atom2])
              )  # bond type (e.g. 'c3-c3' or 'c3-hc')
     try:
         Kb = molecule.topology.bond_types[btype][0]  # elastic constant of the bond
         b0 = molecule.topology.bond_types[btype][1]  # equilibrium bond length
     except:
-        btype = ('{}-{}'.format(molecule.topology.type[atom2],
-                                molecule.topology.type[atom1])
+        btype = ('{}-{}'.format(molecule.atom_type[atom2],
+                                molecule.atom_type[atom1])
                  )
         try:
             Kb = molecule.topology.bond_types[btype][0]
