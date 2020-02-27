@@ -17,7 +17,7 @@ def is_main():
     return __name__ == '__main__'
 
 ##############################################################################
-if is_main():
+def main():
 
     molecule = Molecule()
 
@@ -51,5 +51,5 @@ if is_main():
     print('Vd (antes) =', Vd)
     print('Vd (depois) =', Vd1)
     '''
-    dihedral_energy_graphic.dihedral_energy_graphic(molecule, 4, 1, 2, 3, np.pi/180, 360, pdf_name=path+'/../Graphs/PE_ligand_semH.pdf',
-                                                    write_mol2=False, mol2_name=path2 + '_rotated.mol2')
+    dihedral_energy_graphic.dihedral_energy_graphic(molecule, 4, 1, 2, 3, np.pi/180, 360, 
+		pdf_name=path+'/../Graphs/PE_ligand_semH.pdf', write_mol2=False, mol2_name=path2 + '_rotated.mol2')
