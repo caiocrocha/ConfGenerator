@@ -13,15 +13,22 @@ import DihedralForce.dihedral_force as dihedral_force
 import DihedralPotential.dihedral_energy_graphic as dihedral_energy_graphic
 import heuristic_conformation
 
-def is_main():
-    return __name__ == '__main__'
+def get_cmd_line():
+    parser = argparse.ArgumentParser(description='MOL2 and FRCMOD reader, potential energy calculator.')
+    parser.add_argument('--mol2', 	  action='store', dest='mol2',	   required=True, help='MOL2 file.')
+    parser.add_argument('--frcmod',   action='store', dest='frcmod',   required=True, help='FRCMOD file.')
+    parser.add_argument('--new_mol2', action='store', dest='new_mol2', required=True, help='New MOL2 file.')
+    arguments = parser.parse_args()
+    # Assign from cmd line.
+    return arguments.mol2, arguments.frcmod, arguments.new_mol2
 
-##############################################################################
 def main():
 
     molecule = Molecule()
 
     path = os.path.dirname(os.path.abspath(__file__))
+
+    # mol2, frcmod, new_mol2 = get_cmd_line()
 
     '''
     path1 = path + '/../3-metil-pentano'
@@ -51,5 +58,7 @@ def main():
     print('Vd (antes) =', Vd)
     print('Vd (depois) =', Vd1)
     '''
-    dihedral_energy_graphic.dihedral_energy_graphic(molecule, 4, 1, 2, 3, np.pi/180, 360, 
+    dihedral_energy_graphic.dihedral_energy_graphic(molecule, 4, 1, 2, 3, np.pi/180, 360,
 		pdf_name=path+'/../Graphs/PE_ligand_semH.pdf', write_mol2=False, mol2_name=path2 + '_rotated.mol2')
+
+if __name__ == '__main__': main()

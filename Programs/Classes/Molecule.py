@@ -46,6 +46,7 @@ class Molecule:
             # absence of a bond between atoms (row, colune) is indicated in 
             # self.bond_matrix[k], where k corresponds to indices (i, j) in the 
             # matricial representation.
+
             self.num_angles     = 0  # number of angles
             self.angle_list     = [] # list of angles - in triplets
             self.num_dihedrals  = 0  # number of dihedrals (torsions)
@@ -54,10 +55,12 @@ class Molecule:
             # e.g. self.bond_types['c3-hc'][0] or self.bond_types['c3-hc'][1], where 
             # index 0 refers to the "spring" constant for the elastic potential energy 
             # equations and index 1 refers to the equilibrium bond length.
+
             self.angle_types    = {}
             # e.g. self.angle_types['hc-c3-hc'][0] or self.bond_types['hc-c3-hc'][1], 
             # where index 0 refers to the angle "spring" constant and index 1 refers 
             # to the equilibrium angle converted to radians.
+
             self.dihedral_types = {}
             # e.g. self.dihedral_types['c3-c3-c3-c3'][0], 
             # self.dihedral_types['c3-c3-c3-c3'][1] (dihedral angle "spring" constant), 

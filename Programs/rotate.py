@@ -1,9 +1,7 @@
 import math
 import argparse
+import os
 from Classes.Molecule import Molecule
-
-def is_main():
-    return __name__ == '__main__'
     
 def get_cmd_line():
     parser = argparse.ArgumentParser(description='MOL2 reader, chain rotator.')
@@ -57,11 +55,11 @@ def rotate_atom(molecule, i):
 def recursive_rotation_list(molecule, atom, previous, rlist):
     k = int(atom*(atom-1)/2)
     for i in range(atom-1, -1, -1):
-        if(molecule.topology.bond_matrix[k+i] and i != previous and i not in rlist):
+        if molecule.topology.bond_matrix[k + i] and i != previous and i not in rlist:
             rlist.append(i)
             recursive_rotation_list(molecule, i, atom, rlist)
     for i in range(atom+1, molecule.num_atoms):
-        if(molecule.topology.bond_matrix[int(i*(i-1)/2 + atom)] and i != previous and i not in rlist):
+        if molecule.topology.bond_matrix[int(i * (i - 1) / 2 + atom)] and i != previous and i not in rlist:
             rlist.append(i)
             recursive_rotation_list(molecule, i, atom, rlist)
 
@@ -69,25 +67,31 @@ def rotate(molecule, rotation_list, a, b, theta, ntimes, write_mol2=False, mol2_
     init_rotation_axis(molecule, a-1, b-1, theta)
     if not write_mol2:
         for i in range(ntimes):
-            for atom in rotation_list:
+            for atom in rotation_list[1:]:
                 rotate_atom(molecule, atom)
     else:
         molecule.write_mol2(mol2_name, 'w+')
         for i in range(ntimes):
-            for atom in rotation_list:
+            for atom in rotation_list[1:]:
                 rotate_atom(molecule, atom)
             molecule.write_mol2(mol2_name, 'a')
                       
 def get_rotation_list(molecule, a, b):
-    rotation_list = []
+    rotation_list = [b-1]
     recursive_rotation_list(molecule, b-1, a-1, rotation_list)
     return rotation_list
 
-##############################################################################
-if is_main():
+def main():
 
     molecule = Molecule()
-    mol2, new_mol2 = get_cmd_line()
+
+    path = os.path.dirname(os.path.abspath(__file__))
+
+    # mol2, new_mol2 = get_cmd_line()
+    mol2 = path + '/../sample_files/1b5e_1.mol2'
+    new_mol2 = path + '/../sample_files/1b5e_1_rotated.mol2'
     molecule.read_mol2(mol2)
     rotation_list = get_rotation_list(molecule, 9, 7)
     rotate(molecule, rotation_list, 9, 7, math.pi/180, 360, True, new_mol2)
+
+if __name__ == '__main__': main()
