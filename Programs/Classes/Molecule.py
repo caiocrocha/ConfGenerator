@@ -7,7 +7,7 @@ class Molecule:
         self.topology  = self.Topology()
         self.id        = [] # 'ATOM' or 'HETATM'
         self.atom      = [] # atom name
-        self.atom_type          = [] # atom type
+        self.atom_type = [] # atom type
         self.alt_loc   = [] # alternate location indicator
         self.residue   = [] # residue name
         self.chain     = [] # chain identifier
@@ -43,8 +43,8 @@ class Molecule:
             self.bond_matrix   = None
             # Matrix of bonds, which is a symmetric matrix in its linear 
             # representation, for the sake of memory savings. The presence or 
-            # absence of a bond between atoms (row, colune) is indicated in 
-            # self.bond_matrix[k], where k corresponds to indices (i, j) in the 
+            # absence of a bond between atoms (row, column) is indicated in 
+            # self.bond_matrix[k], where k corresponds to indices (i, j) in 
             # matricial representation.
 
             self.num_angles     = 0  # number of angles
@@ -71,7 +71,7 @@ class Molecule:
         with open (filename, 'r') as inf:
             line = inf.readline()
             while line:
-                if '@<TRIPOS>MOLECULE' in line:
+                if line.startswith('@<TRIPOS>MOLECULE'):
                     line = inf.readline()
                     line = inf.readline().split()
                     self.num_atoms          = int(line[0])
@@ -81,7 +81,7 @@ class Molecule:
                     self.topology.num_sets  = int(line[4])
                     self.molecule_type = inf.readline().strip()
                     self.charge_type   = inf.readline().strip()
-                elif '@<TRIPOS>ATOM' in line:
+                elif line.startswith('@<TRIPOS>ATOM'):
                     natoms = self.num_atoms
                     self.atom = np.empty(natoms, dtype='U4')
                     self.x = np.zeros(natoms, dtype='float32')
@@ -102,7 +102,7 @@ class Molecule:
                         self.topology.subst_name[i] = line[7]
                         if len(line) > 8:
                             self.topology.charge[i]     = line[8]
-                elif '@<TRIPOS>BOND' in line:
+                elif line.startswith('@<TRIPOS>BOND'):
                     nbonds = self.topology.num_bonds
                     self.topology.bond_list   = np.zeros(nbonds * 2, dtype='uint8')
                     self.topology.bond_matrix = np.zeros(Trimatrix.get_size(
@@ -115,7 +115,7 @@ class Molecule:
                         )] = True
                         self.topology.bond_list[i]   = line[1]
                         self.topology.bond_list[i+1] = line[2]
-                elif '@<TRIPOS>SUBSTRUCTURE' in line:
+                elif line.startswith('@<TRIPOS>SUBSTRUCTURE'):
                     line = inf.readline().strip()
                     while line:
                         self.topology.substructures.append(line)
@@ -155,7 +155,7 @@ class Molecule:
         with open(filename, 'r') as inf:
             line = inf.readline()
             while line:
-                if'!NATOM' in line:
+                if '!NATOM' in line:
                     natoms = self.num_atoms = int(line.split()[0])
                     self.topology.segid     = np.empty(natoms, dtype='U3')
                     self.topology.resid     = np.zeros(natoms, dtype='uint8')
@@ -175,7 +175,7 @@ class Molecule:
                         self.topology.charge[i]  = line[6]
                         self.topology.mass[i]    = line[7]
 
-                elif('!NBOND' in line):
+                elif '!NBOND' in line:
                     nbonds = int(line.split()[0])
                     self.topology.num_bonds = nbonds
                     num_lines = math.ceil(nbonds/4)
@@ -195,7 +195,7 @@ class Molecule:
                             self.topology.bond_list[count+1] = line[j+1]
                             count += 2
 
-                elif('!NTHETA' in line):
+                elif '!NTHETA' in line:
                     nangles = self.topology.num_angles = int(line.split()[0])
                     num_lines = math.ceil(nangles/3)
                     self.topology.angle_list = np.zeros(nangles*3, dtype='uint8')
@@ -206,7 +206,7 @@ class Molecule:
                             self.topology.angle_list[count] = line[j]
                             count+=1
 
-                elif('!NPHI' in line):
+                elif '!NPHI' in line:
                     ndihed = self.topology.num_dihedrals = int(line.split()[0])
                     num_lines = math.ceil(ndihed/2)
                     self.topology.dihedral_list = np.zeros(ndihed*4, dtype='uint8')
@@ -275,13 +275,12 @@ class Molecule:
     def read_pdb(self, filename):
         with open(filename, 'r') as inf:
             if self.num_atoms != 0:
-                # Statically allocates memory as long as there has already been a
-                # corresponding .psf file read, which will determine to the function
-                # the number of spaces (number of atoms) that need to be preallocated.
-                # Static allocation is preferable over dynamic allocation, since it
-                # uses numpy arrays, which can save up memory by limiting the variables
-                # sizes. Also, the 'append' method is slower than preallocating the
-                # elements and then assigning them values.
+                # Statically allocates memory if a corresponding .psf file has already 
+                # been read, which will determine the amount of memory (proportional to the 
+                # number of atoms) that needs to be preallocated. Static allocation is 
+                # preferable to dynamic allocation, since it uses numpy arrays, which can 
+                # save up memory by limiting the variables sizes. Also, the 'append' method 
+                # is slower than preallocating the elements and then assigning them values.
                 natoms        = self.num_atoms
                 self.id       = np.empty(natoms, dtype='U6')
                 self.atom     = np.empty(natoms, dtype='U4')
@@ -300,7 +299,7 @@ class Molecule:
                 i = 0
 
                 for line in inf:
-                    if 'ATOM' in line or 'HETATM' in line:
+                    if line.startswith('ATOM') or line.startswith('HETATM'):
                         self.id[i]       = line[0:6].strip()
                         self.atom[i]     = line[12:16].strip()
                         self.alt_loc[i]  = line[16:17].strip()
@@ -317,12 +316,12 @@ class Molecule:
                         self.charge[i]   = line[75:77].strip()
                         i+=1
 
-                    elif 'TER' in line or 'END' in line:
+                    elif line.startswith('TER') or line.startswith('END'):
                         break
 
             else:
                 for line in inf:
-                    if 'ATOM' in line or 'HETATM' in line:
+                    if line.startswith('ATOM') or line.startswith('HETATM'):
                         self.id.append(         line[0:6].strip())
                         self.atom.append(       line[12:16].strip())
                         self.alt_loc.append(    line[16:17].strip())
@@ -337,7 +336,7 @@ class Molecule:
                         self.temp.append(float( line[60:66].strip()))
                         self.element.append(    line[72:75].strip())
                         self.charge.append(     line[75:77].strip())
-                    elif 'TER' in line or 'END' in line:
+                    elif line.startswith('TER') or line.startswith('END'):
                         break
                 self.num_atoms = len(self.id)
 
@@ -345,7 +344,7 @@ class Molecule:
         with open(filename, mode) as outf:
             outf.write('MODEL     {:4d}\n'.format(n))
             for i in range(self.num_atoms):
-                if(self.id[i] == 'ATOM' or self.id[i] == 'HETATM'):
+                if self.id[i] == 'ATOM' or self.id[i] == 'HETATM':
                     outf.write('{:6s}{:5d} {:^4s}{:1s}{:3s} {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}{:6.2f}{:6.2f}      {:>2s}{:2s}\n'.format(
                     self.id[i],
                     i+1,    # atom serial number
@@ -368,14 +367,14 @@ class Molecule:
         with open(filename, 'r') as inf:
             line = inf.readline()
             while line:
-                if 'BOND' in line:
+                if line.startswith('BOND'):
                     line = inf.readline()
                     while line.strip():
                         self.topology.bond_types[line[0:5].strip()] = (
                             (float(line[5:13].strip()), float(line[13:21].strip()))
                             )
                         line = inf.readline()
-                elif 'ANGLE' in line:
+                elif line.startswith('ANGLE'):
                     line = inf.readline()
                     while line.strip():
                         angle_rad = float(line[17:29].strip())*math.pi/180
@@ -383,7 +382,7 @@ class Molecule:
                             (float(line[8:17].strip()), angle_rad)
                             )
                         line = inf.readline()
-                elif 'DIHE' in line:
+                elif line.startswith('DIHE'):
                     line = inf.readline()
                     while line.strip():
                         key = line[0:11]
@@ -403,11 +402,11 @@ class Molecule:
         k = int(a*(a-1)/2)
 
         for i in range(a):
-            if(self.topology.bond_matrix[k+i]):
+            if self.topology.bond_matrix[k+i]:
                 blist.append(i+1)
 
         for i in range(a+1, self.num_atoms):
-            if(self.topology.bond_matrix[int(i*(i-1)/2 + a)]):
+            if self.topology.bond_matrix[int(i*(i-1)/2 + a)]:
                 blist.append(i+1)
 
         return blist
@@ -416,7 +415,7 @@ class Molecule:
         alist = []
 
         for i in range(0, self.topology.num_angles*3, 3):
-            if(a == int(self.topology.angle_list[i+1])):
+            if a == int(self.topology.angle_list[i+1]):
                 alist.append(int(self.topology.angle_list[i]))
                 alist.append(int(self.topology.angle_list[i+1]))
                 alist.append(int(self.topology.angle_list[i+2]))
@@ -427,7 +426,7 @@ class Molecule:
         dlist = []
 
         for i in range(0, self.topology.num_dihedrals*4, 4):
-            if(a in self.topology.dihedral_list[i+1:i+3]):
+            if a in self.topology.dihedral_list[i+1:i+3]:
                 dlist.append(int(self.topology.dihedral_list[i]))
                 dlist.append(int(self.topology.dihedral_list[i+1]))
                 dlist.append(int(self.topology.dihedral_list[i+2]))

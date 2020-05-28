@@ -52,12 +52,12 @@ def angle_force(molecule, fx, fy, fz):
             force = -2 * Ka * (angle - a0)
         if norm1 != 0:
             u1 = force / norm1
-            # force multiplied by the partial derivative of Va according to position (x1, y1, z1)
+            # force multiplied by the partial derivative of Va in respect to position (x1, y1, z1)
         else:
             u1 = 0
         if norm2 != 0:
             u3 = force / norm2
-            # force multiplied by the partial derivative of Va according to position (x3, y3, z3)
+            # force multiplied by the partial derivative of Va in respect to position (x3, y3, z3)
         else:
             u3 = 0
         fx1 = p1x * u1

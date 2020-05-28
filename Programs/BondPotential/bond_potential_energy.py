@@ -19,8 +19,8 @@ def bond_pot_variables(molecule, atom1, atom2):
         except:
             pass
     d = b - b0
-    # d: difference between the present distance between the two atoms
-    # and the equilibrium distance
+    # d: difference between the current distance between 
+    # the two atoms and their equilibrium distance
     return bx, by, bz, b, b0, Kb, d
 
 def bond_potential(molecule):

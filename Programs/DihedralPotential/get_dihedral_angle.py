@@ -3,7 +3,7 @@ import math
 import cross_product_3d
 
 def get_dihedral_angle(v21x, v21y, v21z, v23x, v23y, v23z, v34x, v34y, v34z):
-    # Reference: https://stackoverflow.com/questions/20305272/dihedral-torsion-angle-from-four-points-in-cartesian-coordinates-in-python
+    # Adapted from https://stackoverflow.com/questions/20305272/dihedral-torsion-angle-from-four-points-in-cartesian-coordinates-in-python
 
     norm23 = (v23x*v23x + v23y*v23y + v23z*v23z)**0.5
     v23x /= norm23

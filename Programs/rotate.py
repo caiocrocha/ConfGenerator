@@ -18,10 +18,10 @@ def set_rotation_angle(theta):
     t = 1 - cos0
 
 def init_rotation_axis(molecule, a, b, theta):
-    # For the construction of the rotation matrix around the axis defined by the bond that
-    # connects atoms a and b (vector ab, a to b), there needs to be determined ab's unit vector, 
-    # which is mathematicaly defined by its original components divided by the square root
-    # of its magnitude.
+    # For the construction of the rotation matrix around the axis defined by 
+    # the bond that connects atoms a and b (vector ab, a to b), ab unit vector 
+    # has to be determined. A unit vector is mathematicaly defined as its 
+    # original components divided by the square root of its magnitude.
     global Ax, Ay, Az, ux, uy, uz
     Ax = molecule.x[a]
     Ay = molecule.y[a]

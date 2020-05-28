@@ -36,7 +36,7 @@ def dihedral_force_variables(molecule, atom1, atom2, atom3, atom4, dtype):
         p1z = n1z / M1
         # p1 is the normalization of n1
         u1 = force / (norm1 * math.sin(theta1))
-        # force multiplied by the partial derivative of theta1 according to position (x1, y1, z1)
+        # force multiplied by the partial derivative of theta1 in respect to position (x1, y1, z1)
         f1x = p1x * u1
         f1y = p1y * u1
         f1z = p1z * u1
@@ -53,7 +53,7 @@ def dihedral_force_variables(molecule, atom1, atom2, atom3, atom4, dtype):
         p2z = n2z / M2
         # p2 is the normalization of n2
         u4 = force / (norm3 * math.sin(theta2))
-        # force multiplied by the partial derivative of theta2 according to position (x4, y4, z4)
+        # force multiplied by the partial derivative of theta2 in respect to position (x4, y4, z4)
         f4x = p2x * u4
         f4y = p2y * u4
         f4z = p2z * u4
@@ -73,7 +73,7 @@ def dihedral_force_variables(molecule, atom1, atom2, atom3, atom4, dtype):
         f3y = 0
         f3z = 0
     else:
-        const = -1 / norm_vo3  # inverse square of the norm of vector vo3
+        const = -1 / norm_vo3  # inverse square of vector vo3's norm
         n_vo3_f4x, n_vo3_f4y, n_vo3_f4z = cross_product_3d.cross_product_3d(molecule, vo3x, f4x, vo3y, f4y, vo3z, f4z)
         n_v34_f4x, n_v34_f4y, n_v34_f4z = cross_product_3d.cross_product_3d(molecule, v34x, f4x, v34y, f4y, v34z, f4z)
         n_v21_f4x, n_v21_f4y, n_v21_f4z = cross_product_3d.cross_product_3d(molecule, v21x, f4x, v21y, f4y, v21z, f4z)

@@ -55,8 +55,8 @@ def main():
     Vd1 = dihedral_potential_energy.total_dihedral_potential(molecule)
     print('Vb =', Vb)
     print('Va =', Va)
-    print('Vd (antes) =', Vd)
-    print('Vd (depois) =', Vd1)
+    print('Vd (before) =', Vd)
+    print('Vd (after) =', Vd1)
     '''
     dihedral_energy_graphic.dihedral_energy_graphic(molecule, 4, 1, 2, 3, np.pi/180, 360,
 		pdf_name=path+'/../Graphs/PE_ligand_semH.pdf', write_mol2=False, mol2_name=path2 + '_rotated.mol2')
